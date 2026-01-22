@@ -39,3 +39,4 @@ bin/
 
 # Compiled binary (in case of direct go build without -o flag)
 /strataforge
+/strata
