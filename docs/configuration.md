@@ -1,6 +1,6 @@
-# Strata Configuration Guide
+# StrataForge Configuration Guide
 
-Strata uses a layered configuration system powered by the Waffle framework. Configuration can be provided through config files, environment variables, or command-line flags.
+StrataForge uses a layered configuration system powered by the Waffle framework. Configuration can be provided through config files, environment variables, or command-line flags.
 
 ## Configuration Precedence
 
@@ -21,10 +21,10 @@ Place your config file in the application's working directory:
 
 ## Configuration Sections
 
-Strata configuration is divided into two sections:
+StrataForge configuration is divided into two sections:
 
 1. **Waffle Core Configuration** - Framework-level settings (HTTP, TLS, logging, etc.)
-2. **Strata Application Configuration** - App-specific settings (MongoDB, sessions, etc.)
+2. **StrataForge Application Configuration** - App-specific settings (MongoDB, sessions, etc.)
 
 ---
 
@@ -91,14 +91,14 @@ Strata configuration is divided into two sections:
 
 ---
 
-## Strata Application Configuration
+## StrataForge Application Configuration
 
 ### Database Settings
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `mongo_uri` | string | `"mongodb://localhost:27017"` | MongoDB connection URI |
-| `mongo_database` | string | `"strata"` | MongoDB database name |
+| `mongo_database` | string | `"strataforge"` | MongoDB database name |
 | `mongo_max_pool_size` | int | `100` | MongoDB max connection pool size |
 | `mongo_min_pool_size` | int | `10` | MongoDB min connection pool size |
 
@@ -107,7 +107,7 @@ Strata configuration is divided into two sections:
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `session_key` | string | *(dev default)* | Secret key for signing session cookies |
-| `session_name` | string | `"strata-session"` | Session cookie name |
+| `session_name` | string | `"strataforge-session"` | Session cookie name |
 | `session_domain` | string | `""` | Session cookie domain (blank = current host) |
 | `session_max_age` | duration | `"24h"` | Session cookie lifetime (e.g., `24h`, `720h`, `30m`) |
 
@@ -115,7 +115,7 @@ Strata configuration is divided into two sections:
 
 ### Idle Logout Configuration
 
-Strata can automatically log out users who are idle (browser tab open but no interaction). This is useful for security-sensitive deployments where unattended sessions should be terminated.
+StrataForge can automatically log out users who are idle (browser tab open but no interaction). This is useful for security-sensitive deployments where unattended sessions should be terminated.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -141,7 +141,7 @@ idle_logout_warning = "2m"
 
 ### Rate Limiting Configuration
 
-Strata includes configurable rate limiting to protect against brute force login attacks. Rate limiting is per-login_id (not per-IP), which allows many users from the same IP address (like students in a school) to log in without blocking each other.
+StrataForge includes configurable rate limiting to protect against brute force login attacks. Rate limiting is per-login_id (not per-IP), which allows many users from the same IP address (like students in a school) to log in without blocking each other.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -231,7 +231,7 @@ email_verify_expiry = "10m"
 
 ## File Storage Configuration
 
-Strata supports two storage backends for uploaded files:
+StrataForge supports two storage backends for uploaded files:
 
 1. **Local storage** - Files stored on the local filesystem and served by the application
 2. **S3/CloudFront** - Files stored in AWS S3 with signed CloudFront URLs for secure delivery
@@ -296,7 +296,7 @@ To enable Google OAuth:
 | `seed_admin_email` | string | `""` | Email of admin user to create on startup |
 | `seed_admin_name` | string | `"Admin"` | Name of admin user to create on startup |
 
-When `seed_admin_email` is set, Strata will create an admin user with that email on startup if one doesn't already exist.
+When `seed_admin_email` is set, StrataForge will create an admin user with that email on startup if one doesn't already exist.
 
 ---
 
@@ -323,27 +323,27 @@ Configure which email notifications are sent to users. All notifications are **d
 
 ## Environment Variables
 
-Configuration can be overridden using environment variables. Strata uses the `STRATA_` prefix for all environment variables.
+Configuration can be overridden using environment variables. Strata uses the `STRATAFORGE_` prefix for all environment variables.
 
 Examples:
 ```bash
-export STRATA_HTTP_PORT=3000
-export STRATA_LOG_LEVEL=debug
-export STRATA_ENV=prod
-export STRATA_MONGO_URI="mongodb://user:pass@dbserver:27017"
-export STRATA_SESSION_KEY="your-production-secret-key"
-export STRATA_SESSION_MAX_AGE=24h
+export STRATAFORGE_HTTP_PORT=3000
+export STRATAFORGE_LOG_LEVEL=debug
+export STRATAFORGE_ENV=prod
+export STRATAFORGE_MONGO_URI="mongodb://user:pass@dbserver:27017"
+export STRATAFORGE_SESSION_KEY="your-production-secret-key"
+export STRATAFORGE_SESSION_MAX_AGE=24h
 
 # Optional: Enable idle logout
-export STRATA_IDLE_LOGOUT_ENABLED=true
-export STRATA_IDLE_LOGOUT_TIMEOUT=30m
-export STRATA_IDLE_LOGOUT_WARNING=5m
+export STRATAFORGE_IDLE_LOGOUT_ENABLED=true
+export STRATAFORGE_IDLE_LOGOUT_TIMEOUT=30m
+export STRATAFORGE_IDLE_LOGOUT_WARNING=5m
 
 # Rate limiting (enabled by default, configure to adjust)
-# export STRATA_RATE_LIMIT_ENABLED=true
-# export STRATA_RATE_LIMIT_LOGIN_ATTEMPTS=5
-# export STRATA_RATE_LIMIT_LOGIN_WINDOW=15m
-# export STRATA_RATE_LIMIT_LOGIN_LOCKOUT=15m
+# export STRATAFORGE_RATE_LIMIT_ENABLED=true
+# export STRATAFORGE_RATE_LIMIT_LOGIN_ATTEMPTS=5
+# export STRATAFORGE_RATE_LIMIT_LOGIN_WINDOW=15m
+# export STRATAFORGE_RATE_LIMIT_LOGIN_LOCKOUT=15m
 ```
 
 ---
@@ -353,12 +353,12 @@ export STRATA_IDLE_LOGOUT_WARNING=5m
 ### Prerequisites
 
 - MongoDB running on `localhost:27017`
-- Database `strata` (will be created automatically)
+- Database `strataforge` (will be created automatically)
 
 ### config.toml
 
 ```toml
-# Strata Local Development Configuration
+# StrataForge Local Development Configuration
 # Place this file in the application root directory
 
 # =============================================================================
@@ -401,17 +401,17 @@ enable_compression = true
 compression_level = 5
 
 # =============================================================================
-# Strata Application Configuration
+# StrataForge Application Configuration
 # =============================================================================
 
 # MongoDB - local instance
 mongo_uri = "mongodb://localhost:27017"
-mongo_database = "strata"
+mongo_database = "strataforge"
 
 # Session Configuration
 # WARNING: Change session_key in production!
 session_key = "dev-only-change-me-please-0123456789ABCDEF"
-session_name = "strata-session"
+session_name = "strataforge-session"
 session_domain = ""
 session_max_age = "24h"
 
@@ -433,7 +433,7 @@ storage_local_url = "/files"
 mail_smtp_host = "localhost"
 mail_smtp_port = 1025
 mail_from = "noreply@example.com"
-mail_from_name = "Strata"
+mail_from_name = "StrataForge"
 base_url = "http://localhost:8080"
 email_verify_expiry = "10m"
 
@@ -450,8 +450,8 @@ brew services start mongodb-community  # macOS with Homebrew
 # or
 mongod --dbpath /path/to/data          # Manual start
 
-# Run Strata
-go run ./cmd/strata
+# Run StrataForge
+go run ./cmd/strataforge
 ```
 
 The application will be available at `http://localhost:8080`.
@@ -472,37 +472,37 @@ When deploying to production:
 ### Example Production Environment Variables
 
 ```bash
-# All settings use the STRATA_ prefix
-export STRATA_ENV=prod
-export STRATA_LOG_LEVEL=info
-export STRATA_USE_HTTPS=true
-export STRATA_USE_LETS_ENCRYPT=true
-export STRATA_LETS_ENCRYPT_EMAIL=admin@yourdomain.com
-export STRATA_DOMAIN=yourdomain.com
+# All settings use the STRATAFORGE_ prefix
+export STRATAFORGE_ENV=prod
+export STRATAFORGE_LOG_LEVEL=info
+export STRATAFORGE_USE_HTTPS=true
+export STRATAFORGE_USE_LETS_ENCRYPT=true
+export STRATAFORGE_LETS_ENCRYPT_EMAIL=admin@yourdomain.com
+export STRATAFORGE_DOMAIN=yourdomain.com
 
-export STRATA_MONGO_URI="mongodb://user:password@mongo.yourdomain.com:27017/strata?authSource=admin"
-export STRATA_SESSION_KEY="$(openssl rand -hex 32)"
-export STRATA_SESSION_DOMAIN=".yourdomain.com"
-export STRATA_SESSION_MAX_AGE=24h
-export STRATA_CSRF_KEY="$(openssl rand -hex 32)"
+export STRATAFORGE_MONGO_URI="mongodb://user:password@mongo.yourdomain.com:27017/strataforge?authSource=admin"
+export STRATAFORGE_SESSION_KEY="$(openssl rand -hex 32)"
+export STRATAFORGE_SESSION_DOMAIN=".yourdomain.com"
+export STRATAFORGE_SESSION_MAX_AGE=24h
+export STRATAFORGE_CSRF_KEY="$(openssl rand -hex 32)"
 
 # Optional: Enable idle logout for security-sensitive deployments
-# export STRATA_IDLE_LOGOUT_ENABLED=true
-# export STRATA_IDLE_LOGOUT_TIMEOUT=30m
-# export STRATA_IDLE_LOGOUT_WARNING=5m
+# export STRATAFORGE_IDLE_LOGOUT_ENABLED=true
+# export STRATAFORGE_IDLE_LOGOUT_TIMEOUT=30m
+# export STRATAFORGE_IDLE_LOGOUT_WARNING=5m
 
 # Rate limiting (enabled by default, configure to disable or adjust)
-# export STRATA_RATE_LIMIT_ENABLED=true
-# export STRATA_RATE_LIMIT_LOGIN_ATTEMPTS=5
-# export STRATA_RATE_LIMIT_LOGIN_WINDOW=15m
-# export STRATA_RATE_LIMIT_LOGIN_LOCKOUT=15m
+# export STRATAFORGE_RATE_LIMIT_ENABLED=true
+# export STRATAFORGE_RATE_LIMIT_LOGIN_ATTEMPTS=5
+# export STRATAFORGE_RATE_LIMIT_LOGIN_WINDOW=15m
+# export STRATAFORGE_RATE_LIMIT_LOGIN_LOCKOUT=15m
 
 # Email configuration
-export STRATA_MAIL_SMTP_HOST=email-smtp.us-east-1.amazonaws.com
-export STRATA_MAIL_SMTP_PORT=587
-export STRATA_MAIL_SMTP_USER=your-ses-smtp-user
-export STRATA_MAIL_SMTP_PASS=your-ses-smtp-password
-export STRATA_MAIL_FROM=noreply@yourdomain.com
-export STRATA_MAIL_FROM_NAME="Your App Name"
-export STRATA_BASE_URL=https://yourdomain.com
+export STRATAFORGE_MAIL_SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+export STRATAFORGE_MAIL_SMTP_PORT=587
+export STRATAFORGE_MAIL_SMTP_USER=your-ses-smtp-user
+export STRATAFORGE_MAIL_SMTP_PASS=your-ses-smtp-password
+export STRATAFORGE_MAIL_FROM=noreply@yourdomain.com
+export STRATAFORGE_MAIL_FROM_NAME="Your App Name"
+export STRATAFORGE_BASE_URL=https://yourdomain.com
 ```

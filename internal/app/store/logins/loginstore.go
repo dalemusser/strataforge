@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dalemusser/strata/internal/domain/models"
+	"github.com/dalemusser/strataforge/internal/domain/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

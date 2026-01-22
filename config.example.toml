@@ -1,8 +1,8 @@
-# Strata Configuration Example
+# Strataforge Configuration Example
 # Copy this file to config.toml and update values for your environment.
 #
 # Configuration can also be set via:
-#   - Environment variables: STRATA_<KEY> (e.g., STRATA_MONGO_URI)
+#   - Environment variables: STRATAFORGE_<KEY> (e.g., STRATAFORGE_MONGO_URI)
 #   - Command-line flags: --<key> (e.g., --mongo_uri)
 #
 # Precedence (highest wins): flags > env vars > config file > defaults
@@ -87,7 +87,7 @@ index_boot_timeout = "120s"
 session_key = "dev-only-change-me-please-0123456789ABCDEF"
 
 # Session cookie name
-session_name = "strata-session"
+session_name = "strataforge-session"
 
 # Session cookie domain (blank = current host only)
 # For subdomains, use ".example.com" (with leading dot)
@@ -173,7 +173,7 @@ mail_smtp_pass = ""
 
 # From address for outgoing emails
 mail_from = "noreply@example.com"
-mail_from_name = "Strata"
+mail_from_name = "Strataforge"
 
 # Base URL for email links (magic links, password reset, etc.)
 base_url = "http://localhost:8080"

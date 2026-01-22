@@ -4,7 +4,7 @@ package status
 import (
 	"net/http"
 
-	"github.com/dalemusser/strata/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
 	"github.com/go-chi/chi/v5"
 )
 

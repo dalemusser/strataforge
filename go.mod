@@ -1,4 +1,4 @@
-module github.com/dalemusser/strata
+module github.com/dalemusser/strataforge
 
 go 1.24.1
 

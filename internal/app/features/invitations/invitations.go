@@ -11,16 +11,17 @@ import (
 	"strings"
 	"time"
 
-	errorsfeature "github.com/dalemusser/strata/internal/app/features/errors"
-	"github.com/dalemusser/strata/internal/app/store/invitation"
-	"github.com/dalemusser/strata/internal/app/store/sessions"
-	settingsstore "github.com/dalemusser/strata/internal/app/store/settings"
-	userstore "github.com/dalemusser/strata/internal/app/store/users"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/app/system/auditlog"
-	"github.com/dalemusser/strata/internal/app/system/mailer"
-	"github.com/dalemusser/strata/internal/app/system/network"
-	"github.com/dalemusser/strata/internal/app/system/viewdata"
+	errorsfeature "github.com/dalemusser/strataforge/internal/app/features/errors"
+	"github.com/dalemusser/strataforge/internal/app/store/invitation"
+	"github.com/dalemusser/strataforge/internal/app/store/sessions"
+	settingsstore "github.com/dalemusser/strataforge/internal/app/store/settings"
+	userstore "github.com/dalemusser/strataforge/internal/app/store/users"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/auditlog"
+	"github.com/dalemusser/strataforge/internal/app/system/mailer"
+	"github.com/dalemusser/strataforge/internal/app/system/network"
+	"github.com/dalemusser/strataforge/internal/app/system/viewdata"
+	"github.com/dalemusser/strataforge/internal/domain/models"
 	"github.com/dalemusser/waffle/pantry/templates"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/csrf"
@@ -161,9 +162,10 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 // NewVM is the view model for creating a new invitation.
 type NewVM struct {
 	viewdata.BaseVM
-	Email string
-	Role  string
-	Error string
+	Email          string
+	Role           string
+	AvailableRoles []string
+	Error          string
 }
 
 // ManageModalVM is the view model for the manage modal.
@@ -211,8 +213,9 @@ func (h *Handler) manageModal(w http.ResponseWriter, r *http.Request) {
 // showNew displays the new invitation form.
 func (h *Handler) showNew(w http.ResponseWriter, r *http.Request) {
 	vm := NewVM{
-		BaseVM: viewdata.New(r),
-		Role:   "admin", // Default role
+		BaseVM:         viewdata.New(r),
+		Role:           "admin", // Default role
+		AvailableRoles: models.AllRoles(),
 	}
 	vm.Title = "Send Invitation"
 	vm.BackURL = "/invitations"
@@ -232,17 +235,18 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 
 	email := strings.TrimSpace(strings.ToLower(r.FormValue("email")))
 	role := r.FormValue("role")
-	if role == "" {
+	if role == "" || !models.IsValidRole(role) {
 		role = "admin"
 	}
 
 	// Validate email
 	if _, err := mail.ParseAddress(email); err != nil {
 		vm := NewVM{
-			BaseVM: viewdata.New(r),
-			Email:  email,
-			Role:   role,
-			Error:  "Please enter a valid email address",
+			BaseVM:         viewdata.New(r),
+			Email:          email,
+			Role:           role,
+			AvailableRoles: models.AllRoles(),
+			Error:          "Please enter a valid email address",
 		}
 		vm.BackURL = "/invitations"
 		templates.Render(w, r, "invitations/new", vm)
@@ -266,10 +270,11 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	if existingUser != nil {
 		vm := NewVM{
-			BaseVM: viewdata.New(r),
-			Email:  email,
-			Role:   role,
-			Error:  "A user with this email already exists",
+			BaseVM:         viewdata.New(r),
+			Email:          email,
+			Role:           role,
+			AvailableRoles: models.AllRoles(),
+			Error:          "A user with this email already exists",
 		}
 		vm.BackURL = "/invitations"
 		templates.Render(w, r, "invitations/new", vm)
@@ -285,10 +290,11 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.errLog.Log(r, "failed to create invitation", err)
 		vm := NewVM{
-			BaseVM: viewdata.New(r),
-			Email:  email,
-			Role:   role,
-			Error:  "Failed to create invitation",
+			BaseVM:         viewdata.New(r),
+			Email:          email,
+			Role:           role,
+			AvailableRoles: models.AllRoles(),
+			Error:          "Failed to create invitation",
 		}
 		vm.BackURL = "/invitations"
 		templates.Render(w, r, "invitations/new", vm)

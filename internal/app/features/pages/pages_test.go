@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	pagestore "github.com/dalemusser/strata/internal/app/store/pages"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/domain/models"
-	"github.com/dalemusser/strata/internal/testutil"
+	pagestore "github.com/dalemusser/strataforge/internal/app/store/pages"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/domain/models"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -91,86 +91,71 @@ func TestEditRoutes(t *testing.T) {
 }
 
 func TestShowPage_About(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	req := httptest.NewRequest(http.MethodGet, "/about", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
 	handler := h.showPage("about", "About")
+	handler(rec, req)
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		handler(rec, req)
-	}()
-
-	// Test passes if no error
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestShowPage_Contact(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	req := httptest.NewRequest(http.MethodGet, "/contact", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
 	handler := h.showPage("contact", "Contact")
+	handler(rec, req)
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		handler(rec, req)
-	}()
-
-	// Test passes if no error
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestShowPage_Terms(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	req := httptest.NewRequest(http.MethodGet, "/terms", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
 	handler := h.showPage("terms", "Terms of Service")
+	handler(rec, req)
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		handler(rec, req)
-	}()
-
-	// Test passes if no error
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestShowPage_Privacy(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	req := httptest.NewRequest(http.MethodGet, "/privacy", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
 	handler := h.showPage("privacy", "Privacy Policy")
+	handler(rec, req)
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		handler(rec, req)
-	}()
-
-	// Test passes if no error
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestShowPage_AdminCanEdit(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -183,23 +168,19 @@ func TestShowPage_AdminCanEdit(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/about", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
 	handler := h.showPage("about", "About")
+	handler(rec, req)
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		handler(rec, req)
-	}()
-
-	// Test passes if no error - canEdit should be true for admin
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestListPages(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -212,21 +193,18 @@ func TestListPages(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/pages", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.listPages(rec, req)
-	}()
+	h.listPages(rec, req)
 
-	// Test passes if no error
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestEditPage(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -239,6 +217,7 @@ func TestEditPage(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/pages/about/edit", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("slug", "about")
@@ -246,16 +225,11 @@ func TestEditPage(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.editPage(rec, req)
-	}()
+	h.editPage(rec, req)
 
-	// Test passes if no error
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestUpdatePage_Success(t *testing.T) {
@@ -308,6 +282,7 @@ func TestUpdatePage_Success(t *testing.T) {
 }
 
 func TestUpdatePage_TooLong(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -328,6 +303,7 @@ func TestUpdatePage_TooLong(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/pages/about", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("slug", "about")
@@ -335,14 +311,7 @@ func TestUpdatePage_TooLong(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.updatePage(rec, req)
-	}()
+	h.updatePage(rec, req)
 
 	// Should not redirect to success
 	if rec.Code == http.StatusSeeOther && strings.Contains(rec.Header().Get("Location"), "success=1") {
@@ -410,6 +379,7 @@ func TestEditPageVM(t *testing.T) {
 }
 
 func TestShowPage_WithExistingContent(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, pageStore := newTestHandler(t)
 	ctx, cancel := testutil.TestContext()
 	defer cancel()
@@ -426,18 +396,13 @@ func TestShowPage_WithExistingContent(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/about", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
 	handler := h.showPage("about", "About")
+	handler(rec, req)
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		handler(rec, req)
-	}()
-
-	// Test passes if no error - page with content should be rendered
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }

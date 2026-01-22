@@ -109,31 +109,31 @@
     <!-- Content list -->
     {{ if or .Folders .Files }}
       <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
-        <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 uppercase text-xs">
+        <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 uppercase text-xs sticky top-0 z-10">
           <tr class="border-b border-gray-300 dark:border-gray-600">
-            <th class="px-2 py-2">Name</th>
-            <th class="px-2 py-2">Size</th>
-            <th class="px-2 py-2">Modified</th>
-            <th class="px-2 py-2 text-center">Info</th>
-            <th class="px-2 py-2 text-right">Actions</th>
+            <th class="px-4 py-3">Name</th>
+            <th class="px-4 py-3">Size</th>
+            <th class="px-4 py-3">Modified</th>
+            <th class="px-4 py-3 text-center">Info</th>
+            <th class="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
           <!-- Folders -->
           {{ range .Folders }}
           <tr class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-            <td class="px-2 py-2 align-middle">
+            <td class="px-4 py-3 align-middle">
               <a href="/library/folder/{{ .ID }}" class="hover:text-indigo-600 dark:hover:text-indigo-400">
                 <span class="mr-2">📁</span><span class="font-medium">{{ .Name }}</span>
               </a>
             </td>
-            <td class="px-2 py-2 align-middle text-gray-500 dark:text-gray-400">
+            <td class="px-4 py-3 align-middle text-gray-500 dark:text-gray-400">
               {{ .ItemCount }} {{ if eq .ItemCount 1 }}item{{ else }}items{{ end }}
             </td>
-            <td class="px-2 py-2 align-middle text-gray-500 dark:text-gray-400">
+            <td class="px-4 py-3 align-middle text-gray-500 dark:text-gray-400">
               {{ .UpdatedAt }}
             </td>
-            <td class="px-2 py-2 align-middle text-center">
+            <td class="px-4 py-3 align-middle text-center">
               <button
                 type="button"
                 hx-get="/library/folder/{{ .ID }}/info_modal"
@@ -143,7 +143,7 @@
                 title="View folder info"
               >ℹ️</button>
             </td>
-            <td class="px-2 py-2 align-middle text-right">
+            <td class="px-4 py-3 align-middle text-right">
               {{ if $.IsAdmin }}
               <form
                 method="get"
@@ -168,7 +168,7 @@
           <!-- Files -->
           {{ range .Files }}
           <tr class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-            <td class="px-2 py-2 align-middle">
+            <td class="px-4 py-3 align-middle">
               {{ if .IsViewable }}
               <a href="/library/file/{{ .ID }}/view" target="_blank" class="hover:text-indigo-600 dark:hover:text-indigo-400 no-loader">
                 <span class="mr-2">{{ if eq .TypeIcon "image" }}🖼️{{ else if eq .TypeIcon "video" }}🎬{{ else if eq .TypeIcon "audio" }}🎵{{ else if eq .TypeIcon "pdf" }}📄{{ else if eq .TypeIcon "spreadsheet" }}📊{{ else if eq .TypeIcon "document" }}📝{{ else if eq .TypeIcon "archive" }}🗜️{{ else }}📄{{ end }}</span><span>{{ .Name }}</span>
@@ -179,13 +179,13 @@
               </a>
               {{ end }}
             </td>
-            <td class="px-2 py-2 align-middle text-gray-500 dark:text-gray-400">
+            <td class="px-4 py-3 align-middle text-gray-500 dark:text-gray-400">
               {{ .Size }}
             </td>
-            <td class="px-2 py-2 align-middle text-gray-500 dark:text-gray-400">
+            <td class="px-4 py-3 align-middle text-gray-500 dark:text-gray-400">
               {{ .UpdatedAt }}
             </td>
-            <td class="px-2 py-2 align-middle text-center">
+            <td class="px-4 py-3 align-middle text-center">
               <button
                 type="button"
                 hx-get="/library/file/{{ .ID }}/info_modal"
@@ -195,7 +195,7 @@
                 title="View file info"
               >ℹ️</button>
             </td>
-            <td class="px-2 py-2 align-middle text-right whitespace-nowrap">
+            <td class="px-4 py-3 align-middle text-right whitespace-nowrap">
               {{ if .IsViewable }}
               <a href="/library/file/{{ .ID }}/view" target="_blank" class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 no-loader" title="View file in browser">View</a>
               {{ end }}

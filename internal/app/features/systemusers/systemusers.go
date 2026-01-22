@@ -11,15 +11,16 @@ import (
 	"strconv"
 	"strings"
 
-	errorsfeature "github.com/dalemusser/strata/internal/app/features/errors"
-	settingsstore "github.com/dalemusser/strata/internal/app/store/settings"
-	userstore "github.com/dalemusser/strata/internal/app/store/users"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/app/system/auditlog"
-	"github.com/dalemusser/strata/internal/app/system/authutil"
-	"github.com/dalemusser/strata/internal/app/system/mailer"
-	"github.com/dalemusser/strata/internal/app/system/normalize"
-	"github.com/dalemusser/strata/internal/app/system/viewdata"
+	errorsfeature "github.com/dalemusser/strataforge/internal/app/features/errors"
+	settingsstore "github.com/dalemusser/strataforge/internal/app/store/settings"
+	userstore "github.com/dalemusser/strataforge/internal/app/store/users"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/auditlog"
+	"github.com/dalemusser/strataforge/internal/app/system/authutil"
+	"github.com/dalemusser/strataforge/internal/app/system/mailer"
+	"github.com/dalemusser/strataforge/internal/app/system/normalize"
+	"github.com/dalemusser/strataforge/internal/app/system/viewdata"
+	"github.com/dalemusser/strataforge/internal/domain/models"
 	"github.com/dalemusser/waffle/pantry/templates"
 	"github.com/dalemusser/waffle/pantry/text"
 	"github.com/go-chi/chi/v5"
@@ -76,9 +77,10 @@ type ListVM struct {
 	viewdata.BaseVM
 
 	// Filter state
-	SearchQuery string
-	Status      string // "", active, disabled
-	RoleFilter  string // "", admin (renamed to avoid shadowing BaseVM.Role)
+	SearchQuery    string
+	Status         string   // "", active, disabled
+	RoleFilter     string   // "", admin, developer (renamed to avoid shadowing BaseVM.Role)
+	AvailableRoles []string // for dropdown
 
 	// Pagination
 	Page       int
@@ -136,8 +138,13 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Build filter
-	filter := bson.M{"role": "admin"} // In strata, system users are admins
+	// Build filter - show all system users (admin and developer roles)
+	filter := bson.M{"role": bson.M{"$in": models.AllRoles()}}
+
+	// Apply role filter if specified
+	if role != "" && models.IsValidRole(role) {
+		filter["role"] = role
+	}
 
 	if status == "active" || status == "disabled" {
 		filter["status"] = status
@@ -208,20 +215,21 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vm := ListVM{
-		BaseVM:      viewdata.New(r),
-		SearchQuery: searchQ,
-		Status:      status,
-		RoleFilter:  role,
-		Page:        page,
-		PrevPage:    page - 1,
-		NextPage:    page + 1,
-		Total:       total,
-		TotalPages:  totalPages,
-		RangeStart:  rangeStart,
-		RangeEnd:    rangeEnd,
-		HasPrev:     page > 1,
-		HasNext:     page < totalPages,
-		Rows:        rows,
+		BaseVM:         viewdata.New(r),
+		SearchQuery:    searchQ,
+		Status:         status,
+		RoleFilter:     role,
+		AvailableRoles: models.AllRoles(),
+		Page:           page,
+		PrevPage:       page - 1,
+		NextPage:       page + 1,
+		Total:          total,
+		TotalPages:     totalPages,
+		RangeStart:     rangeStart,
+		RangeEnd:       rangeEnd,
+		HasPrev:        page > 1,
+		HasNext:        page < totalPages,
+		Rows:           rows,
 	}
 	vm.Title = "System Users"
 
@@ -281,18 +289,22 @@ func (h *Handler) manageModal(w http.ResponseWriter, r *http.Request) {
 // NewUserVM is the view model for creating a new user.
 type NewUserVM struct {
 	viewdata.BaseVM
-	FullName   string
-	LoginID    string
-	Email      string
-	AuthMethod string
-	Error      string
+	FullName       string
+	LoginID        string
+	Email          string
+	AuthMethod     string
+	SelectedRole   string
+	AvailableRoles []string
+	Error          string
 }
 
 // showNew displays the new user form.
 func (h *Handler) showNew(w http.ResponseWriter, r *http.Request) {
 	vm := NewUserVM{
-		BaseVM:     viewdata.New(r),
-		AuthMethod: "trust",
+		BaseVM:         viewdata.New(r),
+		AuthMethod:     "trust",
+		SelectedRole:   "admin",
+		AvailableRoles: models.AllRoles(),
 	}
 	vm.Title = "New User"
 	vm.BackURL = r.URL.Query().Get("return")
@@ -321,6 +333,12 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	authMethod := r.FormValue("auth_method")
 	loginID := r.FormValue("login_id")
 	email := r.FormValue("email")
+	role := r.FormValue("role")
+
+	// Validate role
+	if !models.IsValidRole(role) {
+		role = "admin" // Default to admin if invalid
+	}
 
 	// For email/google auth, email is the login ID
 	if authMethod == "email" || authMethod == "google" {
@@ -332,7 +350,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		LoginID:    loginID,
 		Email:      email,
 		AuthMethod: authMethod,
-		Role:       "admin", // All system users are admins in strata base
+		Role:       role,
 	}
 
 	// Handle password for password auth
@@ -340,12 +358,14 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("temp_password")
 		if password == "" {
 			vm := NewUserVM{
-				BaseVM:     viewdata.New(r),
-				FullName:   input.FullName,
-				LoginID:    r.FormValue("login_id"),
-				Email:      email,
-				AuthMethod: input.AuthMethod,
-				Error:      "Password is required for password authentication",
+				BaseVM:         viewdata.New(r),
+				FullName:       input.FullName,
+				LoginID:        r.FormValue("login_id"),
+				Email:          email,
+				AuthMethod:     input.AuthMethod,
+				SelectedRole:   role,
+				AvailableRoles: models.AllRoles(),
+				Error:          "Password is required for password authentication",
 			}
 			vm.BackURL = returnURL
 			templates.Render(w, r, "systemusers/new", vm)
@@ -370,12 +390,14 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		h.errLog.Log(r, "failed to create user", err)
 
 		vm := NewUserVM{
-			BaseVM:     viewdata.New(r),
-			FullName:   input.FullName,
-			LoginID:    input.LoginID,
-			Email:      input.Email,
-			AuthMethod: input.AuthMethod,
-			Error:      "Failed to create user. Login ID may already be in use.",
+			BaseVM:         viewdata.New(r),
+			FullName:       input.FullName,
+			LoginID:        input.LoginID,
+			Email:          input.Email,
+			AuthMethod:     input.AuthMethod,
+			SelectedRole:   role,
+			AvailableRoles: models.AllRoles(),
+			Error:          "Failed to create user. Login ID is already in use.",
 		}
 		vm.BackURL = returnURL
 		templates.Render(w, r, "systemusers/new", vm)
@@ -478,16 +500,18 @@ func (h *Handler) show(w http.ResponseWriter, r *http.Request) {
 // EditVM is the view model for editing a user.
 type EditVM struct {
 	viewdata.BaseVM
-	ID         string
-	FullName   string
-	LoginID    string
-	Email      string
-	Auth       string // auth method
-	Status     string
-	IsSelf     bool   // true if editing own account
-	IsEdit     bool   // always true for edit (for template auth field logic)
-	Success    string
-	Error      string
+	ID             string
+	FullName       string
+	LoginID        string
+	Email          string
+	Auth           string // auth method
+	SelectedRole   string
+	AvailableRoles []string
+	Status         string
+	IsSelf         bool   // true if editing own account
+	IsEdit         bool   // always true for edit (for template auth field logic)
+	Success        string
+	Error          string
 }
 
 // showEdit displays the edit user form.
@@ -522,15 +546,17 @@ func (h *Handler) showEdit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vm := EditVM{
-		BaseVM:   viewdata.New(r),
-		ID:       id,
-		FullName: user.FullName,
-		LoginID:  loginID,
-		Email:    email,
-		Auth:     user.AuthMethod,
-		Status:   normalize.Status(user.Status),
-		IsSelf:   actor.UserID() == objID,
-		IsEdit:   true,
+		BaseVM:         viewdata.New(r),
+		ID:             id,
+		FullName:       user.FullName,
+		LoginID:        loginID,
+		Email:          email,
+		Auth:           user.AuthMethod,
+		SelectedRole:   user.Role,
+		AvailableRoles: models.AllRoles(),
+		Status:         normalize.Status(user.Status),
+		IsSelf:         actor.UserID() == objID,
+		IsEdit:         true,
 	}
 	vm.Title = "Edit " + user.FullName
 	vm.BackURL = r.URL.Query().Get("return")
@@ -585,8 +611,14 @@ func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
 	authMethod := r.FormValue("auth_method")
 	loginID := r.FormValue("login_id")
 	email := r.FormValue("email")
+	role := r.FormValue("role")
 	tempPassword := r.FormValue("temp_password")
 	status := r.FormValue("status")
+
+	// Validate role
+	if !models.IsValidRole(role) {
+		role = "admin" // Default to admin if invalid
+	}
 
 	// For email/google auth, email is the login ID
 	if authMethod == "email" || authMethod == "google" {
@@ -597,6 +629,7 @@ func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
 		FullName:   &fullName,
 		AuthMethod: &authMethod,
 		LoginID:    &loginID,
+		Role:       &role,
 	}
 	if email != "" {
 		update.Email = &email
@@ -624,16 +657,18 @@ func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
 		h.errLog.Log(r, "failed to update user", err)
 
 		vm := EditVM{
-			BaseVM:   viewdata.New(r),
-			ID:       id,
-			FullName: fullName,
-			LoginID:  loginID,
-			Email:    email,
-			Auth:     authMethod,
-			Status:   status,
-			IsSelf:   isSelf,
-			IsEdit:   true,
-			Error:    "Failed to update user. Login ID may already be in use.",
+			BaseVM:         viewdata.New(r),
+			ID:             id,
+			FullName:       fullName,
+			LoginID:        loginID,
+			Email:          email,
+			Auth:           authMethod,
+			SelectedRole:   role,
+			AvailableRoles: models.AllRoles(),
+			Status:         status,
+			IsSelf:         isSelf,
+			IsEdit:         true,
+			Error:          "Failed to update user. Login ID is already in use.",
 		}
 		vm.BackURL = returnURL
 		templates.Render(w, r, "systemusers/edit", vm)

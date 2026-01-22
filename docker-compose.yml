@@ -1,4 +1,4 @@
-# Docker Compose for Strata Local Development
+# Docker Compose for StrataForge Local Development
 # Usage:
 #   docker compose up -d          # Start all services
 #   docker compose up -d mongodb  # Start only MongoDB
@@ -12,7 +12,7 @@ services:
   # ==========================================================================
   mongodb:
     image: mongo:7
-    container_name: strata-mongodb
+    container_name: strataforge-mongodb
     restart: unless-stopped
     ports:
       - "27017:27017"
@@ -20,7 +20,7 @@ services:
       - mongodb_data:/data/db
     environment:
       # For development, no auth. In production, use MONGO_INITDB_ROOT_USERNAME/PASSWORD
-      MONGO_INITDB_DATABASE: strata
+      MONGO_INITDB_DATABASE: strataforge
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -35,7 +35,7 @@ services:
   # ==========================================================================
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: strata-mailhog
+    container_name: strataforge-mailhog
     restart: unless-stopped
     ports:
       - "1025:1025"   # SMTP server
@@ -44,13 +44,13 @@ services:
       driver: "none"  # Reduce log noise
 
   # ==========================================================================
-  # Strata Application
+  # StrataForge Application
   # ==========================================================================
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: strata-app
+    container_name: strataforge-app
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -61,28 +61,28 @@ services:
         condition: service_started
     environment:
       # Runtime
-      STRATA_ENV: dev
-      STRATA_LOG_LEVEL: debug
+      STRATAFORGE_ENV: dev
+      STRATAFORGE_LOG_LEVEL: debug
 
       # Database
-      STRATA_MONGO_URI: mongodb://mongodb:27017
-      STRATA_MONGO_DATABASE: strata
+      STRATAFORGE_MONGO_URI: mongodb://mongodb:27017
+      STRATAFORGE_MONGO_DATABASE: strataforge
 
       # Email (MailHog)
-      STRATA_MAIL_SMTP_HOST: mailhog
-      STRATA_MAIL_SMTP_PORT: 1025
-      STRATA_MAIL_FROM: noreply@localhost
-      STRATA_MAIL_FROM_NAME: Strata
-      STRATA_BASE_URL: http://localhost:8080
+      STRATAFORGE_MAIL_SMTP_HOST: mailhog
+      STRATAFORGE_MAIL_SMTP_PORT: 1025
+      STRATAFORGE_MAIL_FROM: noreply@localhost
+      STRATAFORGE_MAIL_FROM_NAME: StrataForge
+      STRATAFORGE_BASE_URL: http://localhost:8080
 
       # Sessions (dev keys - change in production!)
-      STRATA_SESSION_KEY: docker-dev-session-key-change-in-prod-1234
-      STRATA_CSRF_KEY: docker-dev-csrf-key-change-in-production-1234
+      STRATAFORGE_SESSION_KEY: docker-dev-session-key-change-in-prod-1234
+      STRATAFORGE_CSRF_KEY: docker-dev-csrf-key-change-in-production-1234
 
       # File storage
-      STRATA_STORAGE_TYPE: local
-      STRATA_STORAGE_LOCAL_PATH: /app/uploads
-      STRATA_STORAGE_LOCAL_URL: /files
+      STRATAFORGE_STORAGE_TYPE: local
+      STRATAFORGE_STORAGE_LOCAL_PATH: /app/uploads
+      STRATAFORGE_STORAGE_LOCAL_URL: /files
     volumes:
       # Persist uploaded files
       - uploads_data:/app/uploads
@@ -95,9 +95,9 @@ services:
 
 volumes:
   mongodb_data:
-    name: strata-mongodb-data
+    name: strataforge-mongodb-data
   uploads_data:
-    name: strata-uploads
+    name: strataforge-uploads
 
 # ==========================================================================
 # Development Tips:
@@ -105,13 +105,13 @@ volumes:
 #
 # 1. Run only dependencies (MongoDB + MailHog) for local Go development:
 #    docker compose up -d mongodb mailhog
-#    Then run: go run ./cmd/strata
+#    Then run: go run ./cmd/strataforge
 #
 # 2. View captured emails:
 #    Open http://localhost:8025 in your browser
 #
 # 3. Connect to MongoDB:
-#    mongosh mongodb://localhost:27017/strata
+#    mongosh mongodb://localhost:27017/strataforge
 #
 # 4. View app logs:
 #    docker compose logs -f app

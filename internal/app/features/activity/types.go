@@ -8,8 +8,8 @@ package activity
 import (
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/system/timezones"
-	"github.com/dalemusser/strata/internal/app/system/viewdata"
+	"github.com/dalemusser/strataforge/internal/app/system/timezones"
+	"github.com/dalemusser/strataforge/internal/app/system/viewdata"
 )
 
 // Status represents a user's online status.

@@ -162,7 +162,7 @@ func usersSchema() bson.M {
 				"login_id":     bson.M{"bsonType": bson.A{"string", "null"}},
 				"login_id_ci":  bson.M{"bsonType": bson.A{"string", "null"}},
 				"email":        bson.M{"bsonType": bson.A{"string", "null"}},
-				"role":         bson.M{"enum": bson.A{"admin"}}, // Extensible: add new roles here
+				"role":         bson.M{"enum": bson.A{"admin", "developer"}},
 				"status":       bson.M{"enum": bson.A{"active", "disabled"}},
 				"auth_method":  bson.M{"enum": bson.A{"google", "email", "password", "trust"}},
 			},

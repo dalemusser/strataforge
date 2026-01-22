@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/system/tasks"
+	"github.com/dalemusser/strataforge/internal/app/system/tasks"
 	"go.uber.org/zap"
 )
 

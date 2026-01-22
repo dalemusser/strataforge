@@ -1,8 +1,8 @@
-# CLAUDE.md - Strata Project Instructions
+# CLAUDE.md - Strataforge Project Instructions
 
 ## Overview
 
-Strata is a Go web application starter/template. It provides authentication, user management, settings, and dynamic pages out of the box.
+Strataforge is a Go web application starter/template for building monitor-able services. It provides authentication, user management, settings, and dynamic pages out of the box.
 
 ## Key Patterns
 
@@ -44,7 +44,7 @@ Use `viewdata.New(r)` for minimal init or `viewdata.NewBaseVM(r, db, title, back
 
 ## Configuration
 
-Environment variables use `STRATA_` prefix. See `bootstrap/config.go` and `bootstrap/appconfig.go`.
+Environment variables use `STRATAFORGE_` prefix. See `bootstrap/config.go` and `bootstrap/appconfig.go`.
 
 ## Common Commands
 

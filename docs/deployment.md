@@ -1,6 +1,6 @@
-# Strata Production Deployment Guide
+# StrataForge Production Deployment Guide
 
-This guide covers deploying Strata to a production environment.
+This guide covers deploying StrataForge to a production environment.
 
 ---
 
@@ -26,7 +26,7 @@ Use this checklist before going live:
 
 - [ ] **MongoDB URI**: Use authenticated connection string
   ```
-  mongodb://user:password@host:27017/strata?authSource=admin
+  mongodb://user:password@host:27017/strataforge?authSource=admin
   ```
 - [ ] **Connection pooling**: Tune `mongo_max_pool_size` and `mongo_min_pool_size`
 - [ ] **Replica set**: Consider using a replica set for high availability
@@ -80,40 +80,40 @@ Use this checklist before going live:
 
 ## Environment Variables
 
-All configuration can be set via environment variables with the `STRATA_` prefix:
+All configuration can be set via environment variables with the `STRATAFORGE_` prefix:
 
 ```bash
 # Required for production
-export STRATA_ENV=prod
-export STRATA_SESSION_KEY="your-secure-32-char-session-key-here"
-export STRATA_CSRF_KEY="your-secure-32-char-csrf-key-here"
-export STRATA_MONGO_URI="mongodb://user:pass@host:27017/strata"
-export STRATA_BASE_URL="https://yourdomain.com"
+export STRATAFORGE_ENV=prod
+export STRATAFORGE_SESSION_KEY="your-secure-32-char-session-key-here"
+export STRATAFORGE_CSRF_KEY="your-secure-32-char-csrf-key-here"
+export STRATAFORGE_MONGO_URI="mongodb://user:pass@host:27017/strataforge"
+export STRATAFORGE_BASE_URL="https://yourdomain.com"
 
 # HTTPS (Let's Encrypt)
-export STRATA_USE_HTTPS=true
-export STRATA_USE_LETS_ENCRYPT=true
-export STRATA_LETS_ENCRYPT_EMAIL="admin@yourdomain.com"
-export STRATA_DOMAIN="yourdomain.com"
+export STRATAFORGE_USE_HTTPS=true
+export STRATAFORGE_USE_LETS_ENCRYPT=true
+export STRATAFORGE_LETS_ENCRYPT_EMAIL="admin@yourdomain.com"
+export STRATAFORGE_DOMAIN="yourdomain.com"
 
 # Email
-export STRATA_MAIL_SMTP_HOST="smtp.example.com"
-export STRATA_MAIL_SMTP_PORT=587
-export STRATA_MAIL_SMTP_USER="smtp-user"
-export STRATA_MAIL_SMTP_PASS="smtp-password"
-export STRATA_MAIL_FROM="noreply@yourdomain.com"
+export STRATAFORGE_MAIL_SMTP_HOST="smtp.example.com"
+export STRATAFORGE_MAIL_SMTP_PORT=587
+export STRATAFORGE_MAIL_SMTP_USER="smtp-user"
+export STRATAFORGE_MAIL_SMTP_PASS="smtp-password"
+export STRATAFORGE_MAIL_FROM="noreply@yourdomain.com"
 
 # Optional: Google OAuth
-export STRATA_GOOGLE_CLIENT_ID="your-client-id"
-export STRATA_GOOGLE_CLIENT_SECRET="your-client-secret"
+export STRATAFORGE_GOOGLE_CLIENT_ID="your-client-id"
+export STRATAFORGE_GOOGLE_CLIENT_SECRET="your-client-secret"
 
 # Optional: S3 Storage
-export STRATA_STORAGE_TYPE=s3
-export STRATA_STORAGE_S3_REGION="us-east-1"
-export STRATA_STORAGE_S3_BUCKET="your-bucket"
+export STRATAFORGE_STORAGE_TYPE=s3
+export STRATAFORGE_STORAGE_S3_REGION="us-east-1"
+export STRATAFORGE_STORAGE_S3_BUCKET="your-bucket"
 
 # Optional: Initial admin
-export STRATA_SEED_ADMIN_EMAIL="admin@yourdomain.com"
+export STRATAFORGE_SEED_ADMIN_EMAIL="admin@yourdomain.com"
 ```
 
 ---
@@ -123,23 +123,23 @@ export STRATA_SEED_ADMIN_EMAIL="admin@yourdomain.com"
 ### Build the Image
 
 ```bash
-docker build -t strata:latest .
+docker build -t strataforge:latest .
 ```
 
 ### Run with Docker
 
 ```bash
 docker run -d \
-  --name strata \
+  --name strataforge \
   --restart unless-stopped \
   -p 8080:8080 \
-  -e STRATA_ENV=prod \
-  -e STRATA_SESSION_KEY="your-session-key" \
-  -e STRATA_CSRF_KEY="your-csrf-key" \
-  -e STRATA_MONGO_URI="mongodb://host:27017/strata" \
-  -e STRATA_BASE_URL="https://yourdomain.com" \
+  -e STRATAFORGE_ENV=prod \
+  -e STRATAFORGE_SESSION_KEY="your-session-key" \
+  -e STRATAFORGE_CSRF_KEY="your-csrf-key" \
+  -e STRATAFORGE_MONGO_URI="mongodb://host:27017/strataforge" \
+  -e STRATAFORGE_BASE_URL="https://yourdomain.com" \
   -v /path/to/uploads:/app/uploads \
-  strata:latest
+  strataforge:latest
 ```
 
 ### Docker Compose
@@ -148,21 +148,21 @@ docker run -d \
 version: '3.8'
 
 services:
-  strata:
+  strataforge:
     build: .
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
-      STRATA_ENV: prod
-      STRATA_SESSION_KEY: ${SESSION_KEY}
-      STRATA_CSRF_KEY: ${CSRF_KEY}
-      STRATA_MONGO_URI: mongodb://mongo:27017/strata
-      STRATA_BASE_URL: https://yourdomain.com
-      STRATA_MAIL_SMTP_HOST: ${SMTP_HOST}
-      STRATA_MAIL_SMTP_PORT: ${SMTP_PORT}
-      STRATA_MAIL_SMTP_USER: ${SMTP_USER}
-      STRATA_MAIL_SMTP_PASS: ${SMTP_PASS}
+      STRATAFORGE_ENV: prod
+      STRATAFORGE_SESSION_KEY: ${SESSION_KEY}
+      STRATAFORGE_CSRF_KEY: ${CSRF_KEY}
+      STRATAFORGE_MONGO_URI: mongodb://mongo:27017/strataforge
+      STRATAFORGE_BASE_URL: https://yourdomain.com
+      STRATAFORGE_MAIL_SMTP_HOST: ${SMTP_HOST}
+      STRATAFORGE_MAIL_SMTP_PORT: ${SMTP_PORT}
+      STRATAFORGE_MAIL_SMTP_USER: ${SMTP_USER}
+      STRATAFORGE_MAIL_SMTP_PASS: ${SMTP_PASS}
     volumes:
       - uploads:/app/uploads
     depends_on:
@@ -258,9 +258,9 @@ yourdomain.com {
    mongosh
    use admin
    db.createUser({
-     user: "strata",
+     user: "strataforge",
      pwd: "secure-password",
-     roles: [{ role: "readWrite", db: "strata" }]
+     roles: [{ role: "readWrite", db: "strataforge" }]
    })
    ```
 
@@ -269,7 +269,7 @@ yourdomain.com {
 3. **Configure backups**:
    ```bash
    # Daily backup script
-   mongodump --uri="mongodb://user:pass@host:27017/strata" \
+   mongodump --uri="mongodb://user:pass@host:27017/strataforge" \
      --out=/backups/$(date +%Y%m%d)
    ```
 
@@ -354,7 +354,7 @@ Use these for:
 ### Common Issues
 
 **App won't start**
-- Check MongoDB connectivity: `mongosh $STRATA_MONGO_URI`
+- Check MongoDB connectivity: `mongosh $STRATAFORGE_MONGO_URI`
 - Verify environment variables are set
 - Check logs for configuration errors
 
@@ -378,10 +378,10 @@ Use these for:
 View application logs:
 ```bash
 # Docker
-docker logs strata
+docker logs strataforge
 
 # Systemd
-journalctl -u strata -f
+journalctl -u strataforge -f
 ```
 
 ---

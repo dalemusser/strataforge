@@ -83,7 +83,10 @@ func (s *SiteSettings) IsAuthMethodEnabled(method string) bool {
 }
 
 // DefaultSiteName is the default site name used when settings don't exist.
-const DefaultSiteName = "Strata"
+const DefaultSiteName = "StrataForge"
+
+// DefaultFooterHTML is the default footer text.
+const DefaultFooterHTML = "Powered by StrataForge"
 
 // DefaultLandingTitle is the default landing page title.
 const DefaultLandingTitle = "🏠 Welcome"

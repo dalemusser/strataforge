@@ -48,7 +48,9 @@
         name="role"
         class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-gray-100"
       >
-        <option value="admin" {{ if eq .Role "admin" }}selected{{ end }}>Admin</option>
+        {{ range .AvailableRoles }}
+        <option value="{{ . }}" {{ if eq . $.Role }}selected{{ end }}>{{ . }}</option>
+        {{ end }}
       </select>
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">The role the user will have after registration.</p>
     </div>

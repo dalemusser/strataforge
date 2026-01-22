@@ -10,12 +10,12 @@ import (
 	"html/template"
 	"net/http"
 
-	settingsstore "github.com/dalemusser/strata/internal/app/store/settings"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/app/system/authz"
-	"github.com/dalemusser/strata/internal/app/system/htmlsanitize"
-	"github.com/dalemusser/strata/internal/app/system/timeouts"
-	"github.com/dalemusser/strata/internal/domain/models"
+	settingsstore "github.com/dalemusser/strataforge/internal/app/store/settings"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/authz"
+	"github.com/dalemusser/strataforge/internal/app/system/htmlsanitize"
+	"github.com/dalemusser/strataforge/internal/app/system/timeouts"
+	"github.com/dalemusser/strataforge/internal/domain/models"
 	"github.com/dalemusser/waffle/pantry/httpnav"
 	"github.com/dalemusser/waffle/pantry/storage"
 	"github.com/gorilla/csrf"
@@ -135,7 +135,11 @@ func NewBaseVM(r *http.Request, db *mongo.Database, title, backDefault string) B
 		settings, err := store.Get(ctx)
 		if err == nil && settings != nil {
 			vm.SiteName = settings.SiteName
-			vm.FooterHTML = htmlsanitize.SanitizeToHTML(settings.FooterHTML)
+			footerHTML := settings.FooterHTML
+			if footerHTML == "" {
+				footerHTML = models.DefaultFooterHTML
+			}
+			vm.FooterHTML = htmlsanitize.SanitizeToHTML(footerHTML)
 			if settings.HasLogo() && storageProvider != nil {
 				vm.LogoURL = storageProvider.URL(settings.LogoPath)
 			}
@@ -148,14 +152,6 @@ func NewBaseVM(r *http.Request, db *mongo.Database, title, backDefault string) B
 	}
 
 	return vm
-}
-
-// LoadBase populates a BaseVM with site settings and user info from the request context.
-// Pass db=nil if you don't need site settings (will use defaults).
-//
-// Deprecated: Use NewBaseVM instead, which also sets Title, BackURL, and CurrentPath.
-func LoadBase(r *http.Request, db *mongo.Database) BaseVM {
-	return NewBaseVM(r, db, "", "")
 }
 
 // GetSiteName returns the site name from settings, or the default if not available.
@@ -218,7 +214,11 @@ func New(r *http.Request) BaseVM {
 		settings, err := store.Get(ctx)
 		if err == nil && settings != nil {
 			vm.SiteName = settings.SiteName
-			vm.FooterHTML = htmlsanitize.SanitizeToHTML(settings.FooterHTML)
+			footerHTML := settings.FooterHTML
+			if footerHTML == "" {
+				footerHTML = models.DefaultFooterHTML
+			}
+			vm.FooterHTML = htmlsanitize.SanitizeToHTML(footerHTML)
 			if settings.HasLogo() && storageProvider != nil {
 				vm.LogoURL = storageProvider.URL(settings.LogoPath)
 			}

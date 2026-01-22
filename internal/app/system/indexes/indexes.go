@@ -61,6 +61,21 @@ func EnsureAll(ctx context.Context, db *mongo.Database) error {
 	if err := ensureFiles(ctx, db); err != nil {
 		problems = append(problems, "files: "+err.Error())
 	}
+	if err := ensureLedgerEntries(ctx, db); err != nil {
+		problems = append(problems, "ledger_entries: "+err.Error())
+	}
+	if err := ensureAPIKeys(ctx, db); err != nil {
+		problems = append(problems, "api_keys: "+err.Error())
+	}
+	if err := ensureJobs(ctx, db); err != nil {
+		problems = append(problems, "jobs: "+err.Error())
+	}
+	if err := ensureDailyStats(ctx, db); err != nil {
+		problems = append(problems, "daily_stats: "+err.Error())
+	}
+	if err := ensureSavedFilters(ctx, db); err != nil {
+		problems = append(problems, "saved_filters: "+err.Error())
+	}
 
 	if len(problems) > 0 {
 		return errors.New(strings.Join(problems, "; "))
@@ -556,6 +571,189 @@ func ensureFiles(ctx context.Context, db *mongo.Database) error {
 				{Key: "content_type", Value: 1},
 			},
 			Options: options.Index().SetName("idx_file_content_type"),
+		},
+	})
+}
+
+func ensureLedgerEntries(ctx context.Context, db *mongo.Database) error {
+	c := db.Collection("ledger_entries")
+	return ensureIndexSet(ctx, c, []mongo.IndexModel{
+		// Time-based queries (most common)
+		{
+			Keys: bson.D{
+				{Key: "started_at", Value: -1},
+			},
+			Options: options.Index().SetName("idx_ledger_started"),
+		},
+		// Unique request_id
+		{
+			Keys: bson.D{
+				{Key: "request_id", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("uniq_ledger_request_id"),
+		},
+		// Actor queries
+		{
+			Keys: bson.D{
+				{Key: "actor_type", Value: 1},
+				{Key: "actor_id", Value: 1},
+				{Key: "started_at", Value: -1},
+			},
+			Options: options.Index().SetName("idx_ledger_actor"),
+		},
+		// Path queries
+		{
+			Keys: bson.D{
+				{Key: "path", Value: 1},
+				{Key: "started_at", Value: -1},
+			},
+			Options: options.Index().SetName("idx_ledger_path"),
+		},
+		// Status code queries
+		{
+			Keys: bson.D{
+				{Key: "status_code", Value: 1},
+				{Key: "started_at", Value: -1},
+			},
+			Options: options.Index().SetName("idx_ledger_status"),
+		},
+		// Error queries
+		{
+			Keys: bson.D{
+				{Key: "error_class", Value: 1},
+				{Key: "started_at", Value: -1},
+			},
+			Options: options.Index().SetSparse(true).SetName("idx_ledger_error_class"),
+		},
+	})
+}
+
+func ensureAPIKeys(ctx context.Context, db *mongo.Database) error {
+	c := db.Collection("api_keys")
+	return ensureIndexSet(ctx, c, []mongo.IndexModel{
+		// Unique name per API key
+		{
+			Keys: bson.D{
+				{Key: "name", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("uniq_apikey_name"),
+		},
+		// Lookup by key prefix for validation
+		{
+			Keys: bson.D{
+				{Key: "key_prefix", Value: 1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_apikey_prefix_status"),
+		},
+		// List by status and creation date
+		{
+			Keys: bson.D{
+				{Key: "status", Value: 1},
+				{Key: "created_at", Value: -1},
+			},
+			Options: options.Index().SetName("idx_apikey_status_created"),
+		},
+		// Created by (for audit)
+		{
+			Keys: bson.D{
+				{Key: "created_by", Value: 1},
+			},
+			Options: options.Index().SetName("idx_apikey_created_by"),
+		},
+	})
+}
+
+func ensureJobs(ctx context.Context, db *mongo.Database) error {
+	c := db.Collection("jobs")
+	return ensureIndexSet(ctx, c, []mongo.IndexModel{
+		// Claim next job: queue + status + scheduled_at + priority
+		{
+			Keys: bson.D{
+				{Key: "queue_name", Value: 1},
+				{Key: "status", Value: 1},
+				{Key: "priority", Value: -1},
+				{Key: "scheduled_at", Value: 1},
+			},
+			Options: options.Index().SetName("idx_job_claim"),
+		},
+		// List by status
+		{
+			Keys: bson.D{
+				{Key: "status", Value: 1},
+				{Key: "created_at", Value: -1},
+			},
+			Options: options.Index().SetName("idx_job_status_created"),
+		},
+		// Cleanup stale running jobs
+		{
+			Keys: bson.D{
+				{Key: "status", Value: 1},
+				{Key: "started_at", Value: 1},
+			},
+			Options: options.Index().SetName("idx_job_status_started"),
+		},
+		// Job type queries
+		{
+			Keys: bson.D{
+				{Key: "job_type", Value: 1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_job_type_status"),
+		},
+		// Cleanup completed jobs
+		{
+			Keys: bson.D{
+				{Key: "status", Value: 1},
+				{Key: "completed_at", Value: 1},
+			},
+			Options: options.Index().SetName("idx_job_status_completed"),
+		},
+	})
+}
+
+func ensureDailyStats(ctx context.Context, db *mongo.Database) error {
+	c := db.Collection("daily_stats")
+	return ensureIndexSet(ctx, c, []mongo.IndexModel{
+		// Unique date + stat_type combination
+		{
+			Keys: bson.D{
+				{Key: "date", Value: 1},
+				{Key: "stat_type", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("uniq_stats_date_type"),
+		},
+		// Range queries by stat type
+		{
+			Keys: bson.D{
+				{Key: "stat_type", Value: 1},
+				{Key: "date", Value: 1},
+			},
+			Options: options.Index().SetName("idx_stats_type_date"),
+		},
+	})
+}
+
+func ensureSavedFilters(ctx context.Context, db *mongo.Database) error {
+	c := db.Collection("saved_filters")
+	return ensureIndexSet(ctx, c, []mongo.IndexModel{
+		// Unique name per user/feature
+		{
+			Keys: bson.D{
+				{Key: "user_id", Value: 1},
+				{Key: "feature", Value: 1},
+				{Key: "name", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("uniq_filter_user_feature_name"),
+		},
+		// List filters for user/feature
+		{
+			Keys: bson.D{
+				{Key: "user_id", Value: 1},
+				{Key: "feature", Value: 1},
+				{Key: "is_default", Value: -1},
+			},
+			Options: options.Index().SetName("idx_filter_user_feature"),
 		},
 	})
 }

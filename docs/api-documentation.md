@@ -201,10 +201,10 @@ func (h *APIHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 ### New Files
 
 ```
-strata/
+strataforge/
 ├── api/
 │   └── swagger.json              # Generated OpenAPI spec (gitignored)
-├── cmd/strata/
+├── cmd/strataforge/
 │   └── main.go                   # Add swag init in build
 ├── docs/
 │   └── api-documentation.md      # This document
@@ -419,7 +419,7 @@ type UpdateUserRequest struct {
 
 import (
     httpSwagger "github.com/swaggo/http-swagger"
-    _ "github.com/dalemusser/strata/api" // Import generated docs
+    _ "github.com/dalemusser/strataforge/api" // Import generated docs
 )
 
 func BuildHandler(...) (http.Handler, error) {
@@ -498,7 +498,7 @@ swagger-fmt: swagger
 # Build with Swagger generation
 .PHONY: build
 build: swagger
-	go build -o bin/strata ./cmd/strata
+	go build -o bin/strataforge ./cmd/strataforge
 
 # Development: regenerate on file changes
 .PHONY: swagger-watch

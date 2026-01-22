@@ -6,35 +6,39 @@ import (
 	"net/http"
 	"time"
 
-	activityfeature "github.com/dalemusser/strata/internal/app/features/activity"
-	announcementsfeature "github.com/dalemusser/strata/internal/app/features/announcements"
-	auditlogfeature "github.com/dalemusser/strata/internal/app/features/auditlog"
-	authgooglefeature "github.com/dalemusser/strata/internal/app/features/authgoogle"
-	dashboardfeature "github.com/dalemusser/strata/internal/app/features/dashboard"
-	errorsfeature "github.com/dalemusser/strata/internal/app/features/errors"
-	filesfeature "github.com/dalemusser/strata/internal/app/features/files"
-	healthfeature "github.com/dalemusser/strata/internal/app/features/health"
-	heartbeatfeature "github.com/dalemusser/strata/internal/app/features/heartbeat"
-	homefeature "github.com/dalemusser/strata/internal/app/features/home"
-	invitationsfeature "github.com/dalemusser/strata/internal/app/features/invitations"
-	loginfeature "github.com/dalemusser/strata/internal/app/features/login"
-	logoutfeature "github.com/dalemusser/strata/internal/app/features/logout"
-	pagesfeature "github.com/dalemusser/strata/internal/app/features/pages"
-	profilefeature "github.com/dalemusser/strata/internal/app/features/profile"
-	settingsfeature "github.com/dalemusser/strata/internal/app/features/settings"
-	statusfeature "github.com/dalemusser/strata/internal/app/features/status"
-	systemusersfeature "github.com/dalemusser/strata/internal/app/features/systemusers"
-	appresources "github.com/dalemusser/strata/internal/app/resources"
-	"github.com/dalemusser/strata/internal/app/store/activity"
-	announcementstore "github.com/dalemusser/strata/internal/app/store/announcement"
-	"github.com/dalemusser/strata/internal/app/store/audit"
-	"github.com/dalemusser/strata/internal/app/store/oauthstate"
-	"github.com/dalemusser/strata/internal/app/store/ratelimit"
-	"github.com/dalemusser/strata/internal/app/store/sessions"
-	userstore "github.com/dalemusser/strata/internal/app/store/users"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/app/system/auditlog"
-	"github.com/dalemusser/strata/internal/app/system/viewdata"
+	activityfeature "github.com/dalemusser/strataforge/internal/app/features/activity"
+	announcementsfeature "github.com/dalemusser/strataforge/internal/app/features/announcements"
+	apikeysfeature "github.com/dalemusser/strataforge/internal/app/features/apikeys"
+	auditlogfeature "github.com/dalemusser/strataforge/internal/app/features/auditlog"
+	authgooglefeature "github.com/dalemusser/strataforge/internal/app/features/authgoogle"
+	dashboardfeature "github.com/dalemusser/strataforge/internal/app/features/dashboard"
+	errorsfeature "github.com/dalemusser/strataforge/internal/app/features/errors"
+	filesfeature "github.com/dalemusser/strataforge/internal/app/features/files"
+	healthfeature "github.com/dalemusser/strataforge/internal/app/features/health"
+	heartbeatfeature "github.com/dalemusser/strataforge/internal/app/features/heartbeat"
+	homefeature "github.com/dalemusser/strataforge/internal/app/features/home"
+	invitationsfeature "github.com/dalemusser/strataforge/internal/app/features/invitations"
+	jobsfeature "github.com/dalemusser/strataforge/internal/app/features/jobs"
+	ledgerfeature "github.com/dalemusser/strataforge/internal/app/features/ledger"
+	loginfeature "github.com/dalemusser/strataforge/internal/app/features/login"
+	logoutfeature "github.com/dalemusser/strataforge/internal/app/features/logout"
+	pagesfeature "github.com/dalemusser/strataforge/internal/app/features/pages"
+	profilefeature "github.com/dalemusser/strataforge/internal/app/features/profile"
+	settingsfeature "github.com/dalemusser/strataforge/internal/app/features/settings"
+	statsfeature "github.com/dalemusser/strataforge/internal/app/features/stats"
+	statusfeature "github.com/dalemusser/strataforge/internal/app/features/status"
+	systemusersfeature "github.com/dalemusser/strataforge/internal/app/features/systemusers"
+	appresources "github.com/dalemusser/strataforge/internal/app/resources"
+	"github.com/dalemusser/strataforge/internal/app/store/activity"
+	announcementstore "github.com/dalemusser/strataforge/internal/app/store/announcement"
+	"github.com/dalemusser/strataforge/internal/app/store/audit"
+	"github.com/dalemusser/strataforge/internal/app/store/oauthstate"
+	"github.com/dalemusser/strataforge/internal/app/store/ratelimit"
+	"github.com/dalemusser/strataforge/internal/app/store/sessions"
+	userstore "github.com/dalemusser/strataforge/internal/app/store/users"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/auditlog"
+	"github.com/dalemusser/strataforge/internal/app/system/viewdata"
 	"github.com/dalemusser/waffle/config"
 	"github.com/dalemusser/waffle/middleware"
 	"github.com/dalemusser/waffle/pantry/fileserver"
@@ -306,10 +310,10 @@ func BuildHandler(coreCfg *config.CoreConfig, appCfg AppConfig, deps DBDeps, log
 		logger.Info("Google OAuth enabled", zap.String("redirect_url", appCfg.BaseURL+"/auth/google/callback"))
 	}
 
-	// User profile (any logged-in user)
+	// User profile (admin and developer users)
 	profileHandler := profilefeature.NewHandler(deps.MongoDatabase, sessionsStore, errLog, logger)
 	r.Route("/profile", func(sr chi.Router) {
-		sr.Use(sessionMgr.RequireRole("admin"))
+		sr.Use(sessionMgr.RequireRole("admin", "developer"))
 		sr.Mount("/", profilefeature.Routes(profileHandler, sessionMgr))
 	})
 
@@ -412,6 +416,22 @@ func BuildHandler(coreCfg *config.CoreConfig, appCfg AppConfig, deps DBDeps, log
 		logger,
 	)
 	r.Mount("/activity", activityfeature.Routes(activityHandler, sessionMgr))
+
+	// Request Ledger (admin and developer)
+	ledgerHandler := ledgerfeature.NewHandler(deps.MongoDatabase, errLog, logger)
+	r.Mount("/ledger", ledgerfeature.Routes(ledgerHandler, sessionMgr))
+
+	// API Keys management (admin only)
+	apikeysHandler := apikeysfeature.NewHandler(deps.MongoDatabase, errLog, logger)
+	r.Mount("/api-keys", apikeysfeature.Routes(apikeysHandler, sessionMgr))
+
+	// Jobs monitoring (admin and developer)
+	jobsHandler := jobsfeature.NewHandler(deps.MongoDatabase, errLog, logger)
+	r.Mount("/jobs", jobsfeature.Routes(jobsHandler, sessionMgr))
+
+	// Statistics (admin and developer)
+	statsHandler := statsfeature.NewHandler(deps.MongoDatabase, errLog, logger)
+	r.Mount("/stats", statsfeature.Routes(statsHandler, sessionMgr))
 
 	// 404 catch-all for unmatched routes
 	r.NotFound(errorsHandler.NotFound)

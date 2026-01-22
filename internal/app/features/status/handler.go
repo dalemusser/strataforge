@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/system/certcheck"
-	"github.com/dalemusser/strata/internal/app/system/timeouts"
-	"github.com/dalemusser/strata/internal/app/system/viewdata"
+	"github.com/dalemusser/strataforge/internal/app/system/certcheck"
+	"github.com/dalemusser/strataforge/internal/app/system/timeouts"
+	"github.com/dalemusser/strataforge/internal/app/system/viewdata"
 	"github.com/dalemusser/waffle/config"
 	"github.com/dalemusser/waffle/pantry/templates"
 	"github.com/dalemusser/waffle/server"

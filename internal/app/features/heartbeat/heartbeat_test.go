@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/store/activity"
-	"github.com/dalemusser/strata/internal/app/store/sessions"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/testutil"
+	"github.com/dalemusser/strataforge/internal/app/store/activity"
+	"github.com/dalemusser/strataforge/internal/app/store/sessions"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )

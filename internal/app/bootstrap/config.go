@@ -11,22 +11,22 @@ import (
 )
 
 // EnvVarPrefix is the prefix for environment variables.
-// Change this constant when forking strata for a new project.
+// Change this constant when forking strataforge for a new project.
 // For example, change to "STRATALOG" for a stratalog project.
-const EnvVarPrefix = "STRATA"
+const EnvVarPrefix = "STRATAFORGE"
 
 // appConfigKeys defines the configuration keys for this application.
 // These are loaded via WAFFLE's config system with support for:
 //   - Config files: mongo_uri, session_name, etc.
-//   - Environment variables: STRATA_MONGO_URI, STRATA_SESSION_NAME, etc.
+//   - Environment variables: STRATAFORGE_MONGO_URI, STRATAFORGE_SESSION_NAME, etc.
 //   - Command-line flags: --mongo_uri, --session_name, etc.
 var appConfigKeys = []config.AppKey{
 	{Name: "mongo_uri", Default: "mongodb://localhost:27017", Desc: "MongoDB connection URI"},
-	{Name: "mongo_database", Default: "strata", Desc: "MongoDB database name"},
+	{Name: "mongo_database", Default: "strataforge", Desc: "MongoDB database name"},
 	{Name: "mongo_max_pool_size", Default: 100, Desc: "MongoDB max connection pool size (default: 100)"},
 	{Name: "mongo_min_pool_size", Default: 10, Desc: "MongoDB min connection pool size (default: 10)"},
 	{Name: "session_key", Default: "dev-only-change-me-please-0123456789ABCDEF", Desc: "Session signing key (must be strong in production)"},
-	{Name: "session_name", Default: "strata-session", Desc: "Session cookie name"},
+	{Name: "session_name", Default: "strataforge-session", Desc: "Session cookie name"},
 	{Name: "session_domain", Default: "", Desc: "Session cookie domain (blank means current host)"},
 	{Name: "session_max_age", Default: "24h", Desc: "Session cookie max age (e.g., 24h, 720h, 30m)"},
 
@@ -65,7 +65,7 @@ var appConfigKeys = []config.AppKey{
 	{Name: "mail_smtp_user", Default: "", Desc: "SMTP username"},
 	{Name: "mail_smtp_pass", Default: "", Desc: "SMTP password"},
 	{Name: "mail_from", Default: "noreply@example.com", Desc: "From email address"},
-	{Name: "mail_from_name", Default: "Strata", Desc: "From display name"},
+	{Name: "mail_from_name", Default: "Strataforge", Desc: "From display name"},
 
 	// Base URL for email links (magic links, etc.)
 	{Name: "base_url", Default: "http://localhost:8080", Desc: "Base URL for email links"},
@@ -96,7 +96,7 @@ var appConfigKeys = []config.AppKey{
 // WAFFLE's config.LoadWithAppConfig handles:
 //   - Loading from .env files
 //   - Loading from config.yaml/json/toml files
-//   - Reading environment variables (WAFFLE_* for core, STRATA_* for app)
+//   - Reading environment variables (WAFFLE_* for core, STRATAFORGE_* for app)
 //   - Parsing command-line flags
 //   - Merging with precedence: flags > env > files > defaults
 func LoadConfig(logger *zap.Logger) (*config.CoreConfig, AppConfig, error) {

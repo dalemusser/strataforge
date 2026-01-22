@@ -1,6 +1,6 @@
 # UI Design Patterns
 
-This document describes the standard UI design patterns used in Strata. Follow these patterns consistently across all features and in StrataHub.
+This document describes the standard UI design patterns used in StrataForge. Follow these patterns consistently across all features.
 
 ## Table of Contents
 
@@ -34,7 +34,7 @@ All pages use a flex column layout that fills the available height:
   </div>
 
   <!-- Main Content -->
-  <div class="p-4 bg-white dark:bg-gray-800 rounded shadow text-gray-700 dark:text-gray-300 text-sm flex-1 mb-2">
+  <div class="p-4 bg-white dark:bg-gray-800 rounded shadow text-gray-700 dark:text-gray-300 text-sm flex-1 mb-4">
     <!-- Content here -->
   </div>
 </div>
@@ -43,7 +43,7 @@ All pages use a flex column layout that fills the available height:
 
 **Key classes:**
 - Outer wrapper: `flex flex-col h-full` - fills available height
-- Content container: `flex-1 mb-2` - grows to fill space, margin before footer
+- Content container: `flex-1 mb-4` - grows to fill space, margin before footer
 
 ---
 
@@ -164,7 +164,7 @@ When a toggle button (e.g., "Hide Orgs") needs to align with the main section be
 Used for most page content (tables, forms, etc.):
 
 ```html
-<div class="p-4 bg-white dark:bg-gray-800 rounded shadow text-gray-700 dark:text-gray-300 text-sm flex-1 mb-2">
+<div class="p-4 bg-white dark:bg-gray-800 rounded shadow text-gray-700 dark:text-gray-300 text-sm flex-1 mb-4">
   <!-- Content -->
 </div>
 ```
@@ -174,7 +174,7 @@ Used for most page content (tables, forms, etc.):
 For tables or content that may overflow:
 
 ```html
-<div class="p-4 bg-white dark:bg-gray-800 rounded shadow flex-1 mb-2 overflow-auto">
+<div class="p-4 bg-white dark:bg-gray-800 rounded shadow flex-1 mb-4 overflow-auto">
   <table>...</table>
 </div>
 ```

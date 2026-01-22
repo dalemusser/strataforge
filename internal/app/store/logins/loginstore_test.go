@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dalemusser/strata/internal/domain/models"
-	"github.com/dalemusser/strata/internal/testutil"
+	"github.com/dalemusser/strataforge/internal/domain/models"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

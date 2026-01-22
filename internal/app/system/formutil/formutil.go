@@ -30,7 +30,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/dalemusser/strata/internal/app/system/viewdata"
+	"github.com/dalemusser/strataforge/internal/app/system/viewdata"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -47,15 +47,6 @@ func NewBase(r *http.Request, db *mongo.Database, title, backDefault string) Bas
 	return Base{
 		BaseVM: viewdata.NewBaseVM(r, db, title, backDefault),
 	}
-}
-
-// SetBase populates the common Base fields from the request context.
-//
-// Deprecated: Use NewBase instead:
-//
-//	data := myFormData{Base: formutil.NewBase(r, db, "Title", "/back")}
-func SetBase(b *Base, r *http.Request, db *mongo.Database, title, backDefault string) {
-	b.BaseVM = viewdata.NewBaseVM(r, db, title, backDefault)
 }
 
 // SetError sets the error message on a Base struct.

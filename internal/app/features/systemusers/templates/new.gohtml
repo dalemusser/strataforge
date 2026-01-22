@@ -30,6 +30,17 @@
            class="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 p-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" required />
   </div>
 
+  <!-- Role -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
+    <select name="role" id="role-select"
+            class="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      {{ range .AvailableRoles }}
+      <option value="{{ . }}" {{ if eq . $.SelectedRole }}selected{{ end }}>{{ . }}</option>
+      {{ end }}
+    </select>
+  </div>
+
   <!-- Auth Method -->
   <div>
     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Auth Method</label>

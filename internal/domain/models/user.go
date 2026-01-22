@@ -46,18 +46,15 @@ type User struct {
 
 // User roles
 const (
-	RoleAdmin = "admin"
-	// Add more roles as needed for your application:
-	// RoleEditor = "editor"
-	// RoleViewer = "viewer"
+	RoleAdmin     = "admin"
+	RoleDeveloper = "developer"
 )
 
 // AllRoles returns all valid user roles.
-// Extend this function when adding new roles.
 func AllRoles() []string {
 	return []string{
 		RoleAdmin,
-		// Add new roles here
+		RoleDeveloper,
 	}
 }
 

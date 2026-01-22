@@ -30,3 +30,12 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Tailwind CSS standalone CLI binary
+tailwindcss
+
+# Build output
+bin/
+
+# Compiled binary (in case of direct go build without -o flag)
+/strataforge

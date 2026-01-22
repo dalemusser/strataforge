@@ -2,7 +2,7 @@
 package bootstrap
 
 import (
-	"github.com/dalemusser/strata/internal/app/system/mailer"
+	"github.com/dalemusser/strataforge/internal/app/system/mailer"
 	"github.com/dalemusser/waffle/pantry/storage"
 	"go.mongodb.org/mongo-driver/mongo"
 )

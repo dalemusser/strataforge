@@ -3,7 +3,7 @@ package folder
 import (
 	"testing"
 
-	"github.com/dalemusser/strata/internal/testutil"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )

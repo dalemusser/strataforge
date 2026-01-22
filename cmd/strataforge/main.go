@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/dalemusser/strata/internal/app/bootstrap"
+	"github.com/dalemusser/strataforge/internal/app/bootstrap"
 	"github.com/dalemusser/waffle/app"
 )
 

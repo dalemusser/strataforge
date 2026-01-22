@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	activitystore "github.com/dalemusser/strata/internal/app/store/activity"
-	"github.com/dalemusser/strata/internal/app/store/sessions"
-	userstore "github.com/dalemusser/strata/internal/app/store/users"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/testutil"
+	activitystore "github.com/dalemusser/strataforge/internal/app/store/activity"
+	"github.com/dalemusser/strataforge/internal/app/store/sessions"
+	userstore "github.com/dalemusser/strataforge/internal/app/store/users"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -81,6 +81,7 @@ func TestRoutes(t *testing.T) {
 }
 
 func TestServeDashboard_AdminOnly(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -93,21 +94,19 @@ func TestServeDashboard_AdminOnly(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/activity", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.ServeDashboard(rec, req)
-	}()
+	h.ServeDashboard(rec, req)
 
-	// Test passes if no error during serving
+	// Handler should return 200 OK when templates are properly initialized
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestServeOnlineTable_ReturnsActiveSessions(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -120,21 +119,18 @@ func TestServeOnlineTable_ReturnsActiveSessions(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/activity/online-table", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.ServeOnlineTable(rec, req)
-	}()
+	h.ServeOnlineTable(rec, req)
 
-	// Test passes if no error during serving
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestServeSummary_WeeklyStats(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -147,21 +143,18 @@ func TestServeSummary_WeeklyStats(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/activity/summary", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.ServeSummary(rec, req)
-	}()
+	h.ServeSummary(rec, req)
 
-	// Test passes if no error during serving
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestServeExport_DateFiltering(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -174,18 +167,14 @@ func TestServeExport_DateFiltering(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/activity/export?start=2024-01-01&end=2024-01-31", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.ServeExport(rec, req)
-	}()
+	h.ServeExport(rec, req)
 
-	// Test passes if no error during serving
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestServeSessionsCSV_Format(t *testing.T) {
@@ -311,6 +300,7 @@ func TestServeEventsJSON_Format(t *testing.T) {
 }
 
 func TestServeUserDetail_NotFound(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -325,6 +315,7 @@ func TestServeUserDetail_NotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/activity/user/"+nonExistentID.Hex(), nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("userID", nonExistentID.Hex())
@@ -332,16 +323,10 @@ func TestServeUserDetail_NotFound(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// May panic due to template or nil
-			}
-		}()
-		h.ServeUserDetail(rec, req)
-	}()
+	h.ServeUserDetail(rec, req)
 
-	// Test passes if it handles the request without crashing
+	// Handler should handle non-existent user gracefully
+	// (either 404 or render a page)
 }
 
 func TestParseDateRange(t *testing.T) {

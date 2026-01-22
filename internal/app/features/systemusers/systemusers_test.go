@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	userstore "github.com/dalemusser/strata/internal/app/store/users"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/testutil"
+	userstore "github.com/dalemusser/strataforge/internal/app/store/users"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -64,25 +64,21 @@ func TestRoutes(t *testing.T) {
 }
 
 func TestList_AdminOnly(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	// Request without user (handled by middleware in practice)
 	req := httptest.NewRequest(http.MethodGet, "/system-users", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.list(rec, req)
-	}()
+	h.list(rec, req)
 
-	// Just verify it doesn't crash without auth context
+	// Handler should handle unauthenticated request gracefully
 }
 
 func TestList_Pagination(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, userStore := newTestHandler(t)
 	ctx, cancel := testutil.TestContext()
 	defer cancel()
@@ -110,18 +106,14 @@ func TestList_Pagination(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/system-users?page=1", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.list(rec, req)
-	}()
+	h.list(rec, req)
 
-	// Test passes if no error during list
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestCreate_Success(t *testing.T) {
@@ -168,6 +160,7 @@ func TestCreate_Success(t *testing.T) {
 }
 
 func TestCreate_PasswordAuthRequiresPassword(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -187,16 +180,10 @@ func TestCreate_PasswordAuthRequiresPassword(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/system-users/new", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.create(rec, req)
-	}()
+	h.create(rec, req)
 
 	// Should not redirect (should show error)
 	if rec.Code == http.StatusSeeOther {

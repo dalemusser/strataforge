@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/store/invitation"
-	"github.com/dalemusser/strata/internal/app/store/sessions"
-	userstore "github.com/dalemusser/strata/internal/app/store/users"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/testutil"
+	"github.com/dalemusser/strataforge/internal/app/store/invitation"
+	"github.com/dalemusser/strataforge/internal/app/store/sessions"
+	userstore "github.com/dalemusser/strataforge/internal/app/store/users"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -93,28 +93,21 @@ func TestAcceptRoutes(t *testing.T) {
 }
 
 func TestList_AdminOnly(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _, _ := newTestHandler(t)
 
 	// Request without user (unauthenticated)
 	req := httptest.NewRequest(http.MethodGet, "/invitations", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	// Direct handler call - list doesn't check auth itself, that's middleware
-	// Testing that the handler works when called
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic without full setup
-			}
-		}()
-		h.list(rec, req)
-	}()
+	h.list(rec, req)
 
-	// If it didn't panic completely, check status
-	// The list function should run (auth middleware is separate)
+	// Handler should handle unauthenticated request gracefully
 }
 
 func TestList_ReturnsInvitations(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, db, invStore, _ := newTestHandler(t)
 	ctx, cancel := testutil.TestContext()
 	defer cancel()
@@ -141,22 +134,19 @@ func TestList_ReturnsInvitations(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/invitations", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.list(rec, req)
-	}()
+	h.list(rec, req)
 
-	// Test passes if no fatal error occurred during list
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 	_ = db
 }
 
 func TestCreate_InvalidEmail(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _, _ := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -174,16 +164,10 @@ func TestCreate_InvalidEmail(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/invitations/new", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.create(rec, req)
-	}()
+	h.create(rec, req)
 
 	// Invalid email should not redirect (should show error in form)
 	if rec.Code == http.StatusSeeOther {
@@ -192,6 +176,7 @@ func TestCreate_InvalidEmail(t *testing.T) {
 }
 
 func TestCreate_DuplicateEmail(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _, userStore := newTestHandler(t)
 	ctx, cancel := testutil.TestContext()
 	defer cancel()
@@ -222,16 +207,10 @@ func TestCreate_DuplicateEmail(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/invitations/new", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.create(rec, req)
-	}()
+	h.create(rec, req)
 
 	// Duplicate email should not redirect to success
 	if rec.Code == http.StatusSeeOther && strings.Contains(rec.Header().Get("Location"), "success=1") {
@@ -405,19 +384,14 @@ func TestResend_Success(t *testing.T) {
 }
 
 func TestShowAccept_InvalidToken(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _, _ := newTestHandler(t)
 
 	req := httptest.NewRequest(http.MethodGet, "/invite?token=invalid-token", nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.showAccept(rec, req)
-	}()
+	h.showAccept(rec, req)
 
 	// Should show error page (not redirect)
 	if rec.Code == http.StatusSeeOther {
@@ -426,6 +400,7 @@ func TestShowAccept_InvalidToken(t *testing.T) {
 }
 
 func TestShowAccept_ValidToken(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, invStore, _ := newTestHandler(t)
 	ctx, cancel := testutil.TestContext()
 	defer cancel()
@@ -443,16 +418,10 @@ func TestShowAccept_ValidToken(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/invite?token="+inv.Token, nil)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.showAccept(rec, req)
-	}()
+	h.showAccept(rec, req)
 
 	// Should not redirect to login (should show accept form)
 	if rec.Code == http.StatusSeeOther && rec.Header().Get("Location") == "/login" {
@@ -461,6 +430,7 @@ func TestShowAccept_ValidToken(t *testing.T) {
 }
 
 func TestHandleAccept_MissingName(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, invStore, _ := newTestHandler(t)
 	ctx, cancel := testutil.TestContext()
 	defer cancel()
@@ -483,16 +453,10 @@ func TestHandleAccept_MissingName(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/invite", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.handleAccept(rec, req)
-	}()
+	h.handleAccept(rec, req)
 
 	// Should not redirect to dashboard (should show error)
 	if rec.Code == http.StatusSeeOther && rec.Header().Get("Location") == "/dashboard" {
@@ -501,6 +465,7 @@ func TestHandleAccept_MissingName(t *testing.T) {
 }
 
 func TestHandleAccept_InvalidToken(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, _, _ := newTestHandler(t)
 
 	form := url.Values{}
@@ -509,16 +474,10 @@ func TestHandleAccept_InvalidToken(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/invite", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.handleAccept(rec, req)
-	}()
+	h.handleAccept(rec, req)
 
 	// Should not redirect to dashboard
 	if rec.Code == http.StatusSeeOther && rec.Header().Get("Location") == "/dashboard" {

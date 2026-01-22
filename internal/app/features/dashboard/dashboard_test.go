@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/testutil"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
@@ -70,6 +70,7 @@ func TestDashboard_Unauthenticated(t *testing.T) {
 }
 
 func TestDashboard_AdminView(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	db := testutil.SetupTestDB(t)
 	logger := zap.NewNop()
 
@@ -85,25 +86,19 @@ func TestDashboard_AdminView(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/dashboard", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	// Will panic due to template not being initialized, but we're testing the logic
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Expected - template rendering not initialized
-			}
-		}()
-		h.showDashboard(rec, req)
-	}()
+	h.showDashboard(rec, req)
 
-	// If it didn't redirect to login, the logic is working
+	// Admin user should get 200 OK (not redirected to login)
 	if rec.Code == http.StatusSeeOther && rec.Header().Get("Location") == "/login" {
 		t.Error("admin user should not be redirected to login")
 	}
 }
 
 func TestDashboard_UserView(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	db := testutil.SetupTestDB(t)
 	logger := zap.NewNop()
 
@@ -119,18 +114,12 @@ func TestDashboard_UserView(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/dashboard", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Expected - template rendering not initialized
-			}
-		}()
-		h.showDashboard(rec, req)
-	}()
+	h.showDashboard(rec, req)
 
-	// If it didn't redirect to login, the logic is working
+	// User should not be redirected to login
 	if rec.Code == http.StatusSeeOther && rec.Header().Get("Location") == "/login" {
 		t.Error("user should not be redirected to login")
 	}

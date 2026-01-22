@@ -405,10 +405,10 @@ Send a test event to verify endpoint is working:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `STRATA_WEBHOOK_ENABLED` | `true` | Enable/disable webhook system |
-| `STRATA_WEBHOOK_MAX_ATTEMPTS` | `5` | Default max delivery attempts |
-| `STRATA_WEBHOOK_TIMEOUT` | `30s` | HTTP request timeout |
-| `STRATA_WEBHOOK_RETENTION` | `30d` | Delivery log retention period |
+| `STRATAFORGE_WEBHOOK_ENABLED` | `true` | Enable/disable webhook system |
+| `STRATAFORGE_WEBHOOK_MAX_ATTEMPTS` | `5` | Default max delivery attempts |
+| `STRATAFORGE_WEBHOOK_TIMEOUT` | `30s` | HTTP request timeout |
+| `STRATAFORGE_WEBHOOK_RETENTION` | `30d` | Delivery log retention period |
 
 ### Runtime Settings (Database)
 

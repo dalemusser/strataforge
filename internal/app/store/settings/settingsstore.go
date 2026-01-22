@@ -5,7 +5,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dalemusser/strata/internal/domain/models"
+	"github.com/dalemusser/strataforge/internal/domain/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,6 +36,7 @@ func (s *Store) Get(ctx context.Context) (*models.SiteSettings, error) {
 			SiteName:       models.DefaultSiteName,
 			LandingTitle:   models.DefaultLandingTitle,
 			LandingContent: models.DefaultLandingContent,
+			FooterHTML:     models.DefaultFooterHTML,
 		}, nil
 	}
 	if err != nil {

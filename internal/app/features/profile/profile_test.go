@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	errorsfeature "github.com/dalemusser/strata/internal/app/features/errors"
-	"github.com/dalemusser/strata/internal/app/store/sessions"
-	userstore "github.com/dalemusser/strata/internal/app/store/users"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/app/system/authutil"
-	"github.com/dalemusser/strata/internal/testutil"
+	errorsfeature "github.com/dalemusser/strataforge/internal/app/features/errors"
+	"github.com/dalemusser/strataforge/internal/app/store/sessions"
+	userstore "github.com/dalemusser/strataforge/internal/app/store/users"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/authutil"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -164,6 +164,7 @@ func TestChangePassword_Success(t *testing.T) {
 }
 
 func TestChangePassword_WrongCurrent(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, users, _ := newTestHandler(t)
 
 	// Create test user with password auth
@@ -184,26 +185,19 @@ func TestChangePassword_WrongCurrent(t *testing.T) {
 		LoginID: email,
 		Role:    "user",
 	})
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	// Handler will try to render template, which will panic in tests
-	// We just verify it doesn't redirect to success
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Expected - template rendering not initialized
-			}
-		}()
-		h.handleChangePassword(rec, req)
-	}()
+	h.handleChangePassword(rec, req)
 
-	// If it didn't panic, it should NOT be a success redirect
+	// Should NOT be a success redirect
 	if rec.Code == http.StatusSeeOther && rec.Header().Get("Location") == "/profile?success=password" {
 		t.Error("should not succeed with wrong current password")
 	}
 }
 
 func TestChangePassword_Mismatch(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h, _, users, _ := newTestHandler(t)
 
 	// Create test user with password auth
@@ -224,16 +218,10 @@ func TestChangePassword_Mismatch(t *testing.T) {
 		LoginID: email,
 		Role:    "user",
 	})
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Expected - template rendering
-			}
-		}()
-		h.handleChangePassword(rec, req)
-	}()
+	h.handleChangePassword(rec, req)
 
 	// Should NOT succeed
 	if rec.Code == http.StatusSeeOther && rec.Header().Get("Location") == "/profile?success=password" {

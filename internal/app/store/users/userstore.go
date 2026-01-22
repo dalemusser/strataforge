@@ -10,9 +10,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/system/normalize"
-	"github.com/dalemusser/strata/internal/app/system/status"
-	"github.com/dalemusser/strata/internal/domain/models"
+	"github.com/dalemusser/strataforge/internal/app/system/normalize"
+	"github.com/dalemusser/strataforge/internal/app/system/status"
+	"github.com/dalemusser/strataforge/internal/domain/models"
 	wafflemongo "github.com/dalemusser/waffle/pantry/mongo"
 	"github.com/dalemusser/waffle/pantry/text"
 	"go.mongodb.org/mongo-driver/bson"
@@ -82,7 +82,7 @@ func (s *Store) GetByLoginIDAndAuthMethod(ctx context.Context, loginID, authMeth
 var (
 	// ErrDuplicateLoginID is returned when attempting to create a user with a login_id that already exists.
 	ErrDuplicateLoginID = errors.New("a user with this login ID already exists")
-	errBadRole          = errors.New(`role must be "admin"`)
+	errBadRole          = errors.New("invalid role")
 	errBadStatus        = errors.New(`status must be "active"|"disabled"`)
 )
 
@@ -111,12 +111,8 @@ func (s *Store) Create(ctx context.Context, u models.User) (models.User, error) 
 		u.Status = status.Active
 	}
 
-	// Validate role - for strata base, only admin is supported
-	// Add additional roles here as needed (e.g., "user", "moderator")
-	switch u.Role {
-	case "admin":
-		// ok
-	default:
+	// Validate role
+	if !models.IsValidRole(u.Role) {
 		return models.User{}, errBadRole
 	}
 

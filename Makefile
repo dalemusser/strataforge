@@ -1,14 +1,14 @@
-# Strata Makefile
+# StrataForge Makefile
 
 .PHONY: build run test clean dev seed-admin tidy css css-watch css-prod setup setup-tailwind
 
 # Build the application
 build:
-	go build -o bin/strata ./cmd/strata
+	go build -o bin/strataforge ./cmd/strataforge
 
 # Run the application
 run: build
-	./bin/strata
+	./bin/strataforge
 
 # Run in development mode (with live reload if air is installed)
 dev:
@@ -16,7 +16,7 @@ dev:
 		air; \
 	else \
 		echo "air not installed, using go run"; \
-		go run ./cmd/strata; \
+		go run ./cmd/strataforge; \
 	fi
 
 # Run tests
@@ -43,7 +43,7 @@ seed-admin:
 		echo "Usage: make seed-admin EMAIL=admin@example.com"; \
 		exit 1; \
 	fi
-	./bin/strata seed-admin --email=$(EMAIL)
+	./bin/strataforge seed-admin --email=$(EMAIL)
 
 # Format code
 fmt:
@@ -64,11 +64,11 @@ generate:
 
 # Build for production
 build-prod:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o bin/strata ./cmd/strata
+	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o bin/strataforge ./cmd/strataforge
 
 # Docker build (if Dockerfile exists)
 docker-build:
-	docker build -t strata:latest .
+	docker build -t strataforge:latest .
 
 # Tailwind CSS variables
 CSS_INPUT  = ./internal/app/resources/assets/css/src/input.css

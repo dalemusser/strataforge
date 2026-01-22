@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/resources"
-	"github.com/dalemusser/strata/internal/app/system/tasks"
-	"github.com/dalemusser/strata/internal/domain/models"
+	"github.com/dalemusser/strataforge/internal/app/resources"
+	"github.com/dalemusser/strataforge/internal/app/system/tasks"
+	"github.com/dalemusser/strataforge/internal/domain/models"
 	"github.com/dalemusser/waffle/config"
 	"github.com/dalemusser/waffle/pantry/text"
 	"go.mongodb.org/mongo-driver/bson"

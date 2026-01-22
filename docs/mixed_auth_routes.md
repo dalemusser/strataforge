@@ -1,6 +1,6 @@
 # Mixed Authentication Routes
 
-This document describes how to set up routes with different authentication strategies in strata-based applications.
+This document describes how to set up routes with different authentication strategies in StrataForge-based applications.
 
 ---
 
@@ -26,8 +26,8 @@ This is common for applications that:
 // internal/app/bootstrap/routes.go
 
 import (
-    "github.com/dalemusser/strata/internal/app/system/apicors"
-    "github.com/dalemusser/strata/internal/app/system/auth"
+    "github.com/dalemusser/strataforge/internal/app/system/apicors"
+    "github.com/dalemusser/strataforge/internal/app/system/auth"
     // ... other imports
 )
 
@@ -144,7 +144,7 @@ r.Use(apicors.MiddlewareWithOrigins("https://game1.example.com", "https://game2.
 Helper functions for JSON API responses.
 
 ```go
-import "github.com/dalemusser/strata/internal/app/system/jsonutil"
+import "github.com/dalemusser/strataforge/internal/app/system/jsonutil"
 
 // Success responses
 jsonutil.OK(w, data)
@@ -173,7 +173,7 @@ Add the API key to your environment:
 
 ```bash
 # .env or environment
-STRATA_API_KEY=your-secret-api-key-here
+STRATAFORGE_API_KEY=your-secret-api-key-here
 ```
 
 Or for derived apps (replace STRATA with your app prefix):

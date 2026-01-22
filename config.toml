@@ -1,4 +1,4 @@
-# Strata Local Development Configuration
+# Strataforge Local Development Configuration
 
 # MongoDB
 mongo_uri = "mongodb://localhost:27017"
@@ -6,7 +6,7 @@ mongo_database = "strataforge"
 
 # Session (dev key - change for production!)
 session_key = "dev-only-local-development-key-32chars"
-session_name = "strata-session"
+session_name = "strataforge-session"
 
 # Admin user seeding (created on first startup)
 seed_admin_email = "dalemusser@gmail.com"
@@ -19,7 +19,7 @@ base_url = "http://localhost:8080"
 mail_smtp_host = "localhost"
 mail_smtp_port = 1025
 mail_from = "noreply@localhost"
-mail_from_name = "Strata Dev"
+mail_from_name = "Strataforge Dev"
 
 # File storage (local)
 storage_type = "local"

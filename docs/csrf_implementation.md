@@ -1,12 +1,12 @@
 # CSRF Protection Implementation
 
-This document describes how Cross-Site Request Forgery (CSRF) protection is implemented in strata and how derived applications can use it.
+This document describes how Cross-Site Request Forgery (CSRF) protection is implemented in StrataForge and how derived applications can use it.
 
 ---
 
 ## Overview
 
-Strata provides built-in CSRF protection using the [gorilla/csrf](https://github.com/gorilla/csrf) package. The implementation includes:
+StrataForge provides built-in CSRF protection using the [gorilla/csrf](https://github.com/gorilla/csrf) package. The implementation includes:
 
 - Server-side middleware that validates CSRF tokens on state-changing requests
 - Automatic token injection for HTMX requests via JavaScript
@@ -21,7 +21,7 @@ Strata provides built-in CSRF protection using the [gorilla/csrf](https://github
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `STRATA_CSRF_KEY` | `dev-only-csrf-key-please-change-0123456789` | CSRF token signing key (32+ chars in production) |
+| `STRATAFORGE_CSRF_KEY` | `dev-only-csrf-key-please-change-0123456789` | CSRF token signing key (32+ chars in production) |
 
 **Important:** Always use a strong, unique key in production. Generate one with:
 

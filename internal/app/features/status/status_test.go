@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/testutil"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/testutil"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
@@ -40,6 +40,7 @@ func TestNewHandler(t *testing.T) {
 }
 
 func TestServe_AdminOnly(t *testing.T) {
+	testutil.MustBootTemplates(t)
 	h := newTestHandler(t)
 
 	adminID := primitive.NewObjectID()
@@ -52,18 +53,14 @@ func TestServe_AdminOnly(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/status", nil)
 	req = auth.WithTestUser(req, sessionUser)
+	req = testutil.WithCSRFToken(req)
 	rec := httptest.NewRecorder()
 
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// Template rendering may panic
-			}
-		}()
-		h.Serve(rec, req)
-	}()
+	h.Serve(rec, req)
 
-	// Test passes if no error during serving
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
 }
 
 func TestHandleRenew_NoCertRenewer(t *testing.T) {

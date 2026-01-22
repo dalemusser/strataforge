@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dalemusser/strata/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -36,6 +36,12 @@ func UserCtx(r *http.Request) (role string, name string, userID primitive.Object
 func IsAdmin(r *http.Request) bool {
 	role, _, _, ok := UserCtx(r)
 	return ok && role == "admin"
+}
+
+// IsDeveloper reports whether the current request's user is a developer.
+func IsDeveloper(r *http.Request) bool {
+	role, _, _, ok := UserCtx(r)
+	return ok && role == "developer"
 }
 
 // IsLoggedIn reports whether there is a user in the request context.

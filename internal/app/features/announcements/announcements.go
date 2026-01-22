@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	errorsfeature "github.com/dalemusser/strata/internal/app/features/errors"
-	"github.com/dalemusser/strata/internal/app/store/announcement"
-	"github.com/dalemusser/strata/internal/app/system/auth"
-	"github.com/dalemusser/strata/internal/app/system/viewdata"
+	errorsfeature "github.com/dalemusser/strataforge/internal/app/features/errors"
+	"github.com/dalemusser/strataforge/internal/app/store/announcement"
+	"github.com/dalemusser/strataforge/internal/app/system/auth"
+	"github.com/dalemusser/strataforge/internal/app/system/viewdata"
 	"github.com/dalemusser/waffle/pantry/templates"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/csrf"
@@ -129,7 +129,7 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 // NewVM is the view model for creating a new announcement.
 type NewVM struct {
 	viewdata.BaseVM
-	Title       string
+	AnnTitle    string // renamed to avoid conflict with BaseVM.Title
 	Content     string
 	Type        string
 	Dismissible bool
@@ -147,7 +147,7 @@ func (h *Handler) showNew(w http.ResponseWriter, r *http.Request) {
 		Dismissible: true,
 		Active:      true,
 	}
-	vm.Title = "New Announcement"
+	vm.BaseVM.Title = "New Announcement"
 	vm.BackURL = "/announcements"
 
 	templates.Render(w, r, "announcements/new", vm)
@@ -170,13 +170,14 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	if title == "" {
 		vm := NewVM{
 			BaseVM:      viewdata.New(r),
-			Title:       title,
+			AnnTitle:    title,
 			Content:     content,
 			Type:        string(annType),
 			Dismissible: dismissible,
 			Active:      active,
 			Error:       "Title is required",
 		}
+		vm.BaseVM.Title = "New Announcement"
 		vm.BackURL = "/announcements"
 		templates.Render(w, r, "announcements/new", vm)
 		return
@@ -206,13 +207,14 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		h.errLog.Log(r, "failed to create announcement", err)
 		vm := NewVM{
 			BaseVM:      viewdata.New(r),
-			Title:       title,
+			AnnTitle:    title,
 			Content:     content,
 			Type:        string(annType),
 			Dismissible: dismissible,
 			Active:      active,
 			Error:       "Failed to create announcement",
 		}
+		vm.BaseVM.Title = "New Announcement"
 		vm.BackURL = "/announcements"
 		templates.Render(w, r, "announcements/new", vm)
 		return
