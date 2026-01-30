@@ -122,7 +122,7 @@ setup: setup-tailwind
 
 # Show help
 help:
-	@echo "Strata Makefile targets:"
+	@echo "StrataForge Makefile targets:"
 	@echo ""
 	@echo "Development:"
 	@echo "  build       - Build the application"

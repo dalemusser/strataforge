@@ -95,7 +95,7 @@ func BuildHandler(coreCfg *config.CoreConfig, appCfg AppConfig, deps DBDeps, log
 ### Web UI Routes (Session Auth)
 - Use restrictive CORS with specific allowed origins
 - `AllowCredentials: true` to send cookies
-- `SameSite=None` + `Secure=true` for cross-subdomain cookies
+- `SameSite=Lax` + `Secure=true` for session cookies
 
 ### API Routes (API Key Auth)
 - Use permissive CORS: `Origin: *`
